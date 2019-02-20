@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AgGridApi.Services;
-using DataFactory;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace AgGridApi.Controllers
 {
     [Route("api/aggrid")]
-    public class AgGridController : Controller
+    [ApiController]
+    public class AgGridController : ControllerBase
     {
 
-        private IDemo _demo;
+        private readonly IDemo _demo;
 
         public AgGridController(IDemo demo)
         {
             _demo = demo;
         }
-
 
         [HttpGet]
         [Route("GetData")]

@@ -104,7 +104,7 @@ namespace AgGridApi
             app.UseDatabaseErrorPage();
             app.UseStatusCodePages();
             //index.html
-            app.UseDefaultFiles();
+            //app.UseDefaultFiles();
             app.UseStaticFiles();
 
             //Apply CORS.
