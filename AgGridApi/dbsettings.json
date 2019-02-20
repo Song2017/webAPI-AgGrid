@@ -1,0 +1,6 @@
+{ 
+  "DataFactorySetting": {
+    "OracleConnectionString": "Data Source=31.242.174.33:1521/orcl;Persist Security Info=no;User ID=test;Password=test",
+    "SqlCommandTimeout": 600
+  }
+}

@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgGridApi", "AgGridApi.csproj", "{40ABF956-C017-4FF7-AFAB-F58D4F12B69D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataFactory", "..\DataFactory\DataFactory.csproj", "{56A1E9FE-723E-45F8-AAD0-197DBE99CC7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgGridApi.Services", "..\AgGridApi.Services\AgGridApi.Services.csproj", "{F49748F9-0C42-413B-AA05-E64E6E029D0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgGridApi.Common", "..\AgGridApi.Common\AgGridApi.Common.csproj", "{C681A483-CEF6-4343-886D-84638621BE84}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{40ABF956-C017-4FF7-AFAB-F58D4F12B69D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40ABF956-C017-4FF7-AFAB-F58D4F12B69D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40ABF956-C017-4FF7-AFAB-F58D4F12B69D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40ABF956-C017-4FF7-AFAB-F58D4F12B69D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56A1E9FE-723E-45F8-AAD0-197DBE99CC7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56A1E9FE-723E-45F8-AAD0-197DBE99CC7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56A1E9FE-723E-45F8-AAD0-197DBE99CC7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56A1E9FE-723E-45F8-AAD0-197DBE99CC7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F49748F9-0C42-413B-AA05-E64E6E029D0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F49748F9-0C42-413B-AA05-E64E6E029D0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F49748F9-0C42-413B-AA05-E64E6E029D0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F49748F9-0C42-413B-AA05-E64E6E029D0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C681A483-CEF6-4343-886D-84638621BE84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C681A483-CEF6-4343-886D-84638621BE84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C681A483-CEF6-4343-886D-84638621BE84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C681A483-CEF6-4343-886D-84638621BE84}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {49DE2ACE-BFA0-49E7-8343-87C80B632E85}
+	EndGlobalSection
+EndGlobal

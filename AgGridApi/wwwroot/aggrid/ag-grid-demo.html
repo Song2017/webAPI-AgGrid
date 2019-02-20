@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ag-grid</title>
+    <!--<script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.noStyle.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-balham.css">-->
+    <link rel="stylesheet" href="../css/site.css" />
+    <link rel="stylesheet" href="../lib/ag-grid/dist/css/ag-grid.css" />
+    <link rel="stylesheet" href="../lib/ag-grid/dist/css/ag-theme-balham.css" />
+    <script src="../lib/ag-grid/dist/js/ag-grid-community.js"></script>
+</head>
+<body>
+    <header>
+        <ul>
+            <li>
+                <a href="../index.html">Home</a>
+            </li>
+            <li>
+                <a href="#">Ag Grid</a>
+            </li>
+        </ul>
+    </header>
+
+    <section>
+        <h1>Notes</h1>
+        <div class="button-bar">
+            <button onclick="getSelectedRows()">Get Selected Rows</button>
+            <button onclick="sizeToFit()">Size to Fit</button>
+            <button onclick="autoSizeAll()">Auto-Size All</button>
+        </div>
+        <div id="myGrid" style="height: 540px; width:1000px;" class="ag-theme-balham"></div>
+    </section>
+    <footer>
+        <small>&copy; 2019 VKC</small>
+    </footer>
+
+    <script type="text/javascript" charset="utf-8">
+        var colDefs = [{
+            headerName: "",
+            width: 60,
+            field: "",
+
+            checkboxSelection: function (params) {
+                return true;
+            }
+        }];
+        var autoGroupColumnDef = {
+            headerName: "Model",
+            field: "model",
+            cellRenderer: 'agGroupCellRenderer',
+            cellRendererParams: {
+                checkbox: true
+            }
+        }
+        var gridOptions = {
+            defaultColDef: {
+
+            },
+            columnDefs: colDefs,
+            //rowData: rowData,
+            enableSorting: true,
+            enableFilter: true,
+            rowSelection: 'multiple',
+            checkboxSelection: true,
+            pagination: true,
+            paginationPageSize: 20,
+            defaultColDef: {
+                width: 150,// set every column width
+                editable: false,// make every column editable
+                filter: 'agTextColumnFilter',// make every column use 'text' filter by default
+                resizable: true
+            },
+        };
+        //new agGrid.Grid(document.querySelector('#myGrid'), gridOptions);
+        // get remote data
+        fetch('https://localhost:44364/api/aggrid/GetData').then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            gridOptions.api.setRowData(data);
+        })
+        var strColumns;
+        fetch('https://localhost:44364/api/aggrid/GetDataColumns').then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            strColumns = '';
+            for (let i = 0; i < 6; i++) {
+                strColumns += '{"headerName":"' + data[i] + '","field":"' + data[i] + '"},';
+            }
+            strColumns = "[" + strColumns.slice(0, -1) + "]";
+            gridOptions.api.setColumnDefs(colDefs.concat(JSON.parse(strColumns)));
+        })
+
+
+        // SelectedRows
+        function getSelectedRows() {
+            var selectedNodes = gridOptions.api.getSelectedNodes();
+            var selecteddata = selectedNodes.map(function (node) {
+                return node.data
+            }).map(function (node) {
+                return node.UNIQUEKEY + '_' + node.model
+            }).join(', ');
+            alert('selectNodes: ' + selecteddata);
+        }
+        function sizeToFit() {
+            gridOptions.api.sizeColumnsToFit();
+        }
+
+        function autoSizeAll() {
+            var allColumnIds = [];
+            gridOptions.columnApi.getAllColumns().forEach(function (column) {
+                allColumnIds.push(column.colId);
+            });
+            gridOptions.columnApi.autoSizeColumns(allColumnIds);
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var gridDiv = document.querySelector('#myGrid');
+            new agGrid.Grid(gridDiv, gridOptions);
+
+            // do http request to get our sample data - not using any framework to keep the example self contained.
+            // you will probably use a framework like JQuery, Angular or something else to do your HTTP calls.
+            //var httpRequest = new XMLHttpRequest();
+            //httpRequest.open('GET', 'http://localhost:1183/api/values/GetData');
+            //httpRequest.send();
+            //httpRequest.onreadystatechange = function () {
+            //    if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+            //        var httpResult = JSON.parse(httpRequest.responseText);
+            //        gridOptions.api.setRowData(httpResult);
+            //    }
+            //};
+        });
+    </script>
+
+</body>
+</html>
