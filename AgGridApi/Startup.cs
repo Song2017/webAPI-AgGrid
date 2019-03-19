@@ -1,4 +1,5 @@
 ﻿using System.Text.Encodings.Web;
+using AgGridApi.Models.Request;
 using AgGridApi.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -43,8 +44,9 @@ namespace AgGridApi
             //services.AddScoped<IOperationScoped, Operation>();
             //  Singleton objects are the same for every object and every request 
             //services.AddSingleton<IOperationSingleton, Operation>();
-            services.AddScoped<IDemo, Demo>();
-
+            services.AddScoped<IAGClient, AGClient>();
+            services.AddScoped<IAGServer, AGServer>();
+            services.AddTransient<IRequestBuilder, RequestBuilder>(); 
             //Cors policy is added to controllers via [EnableCors("CorsPolicy")]
             //or .UseCors("CorsPolicy") globally
             services.AddCors(options =>
@@ -103,8 +105,8 @@ namespace AgGridApi
 
             app.UseDatabaseErrorPage();
             app.UseStatusCodePages();
-            //index.html
-            //app.UseDefaultFiles();
+            //https://localhost:44364 to  index.html
+            app.UseDefaultFiles();
             app.UseStaticFiles();
 
             //Apply CORS.

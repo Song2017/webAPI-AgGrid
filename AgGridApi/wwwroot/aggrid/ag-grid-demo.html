@@ -3,13 +3,11 @@
 <head>
     <meta charset="utf-8" />
     <title>ag-grid</title>
-    <!--<script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.noStyle.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
-    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-balham.css">-->
+    <!--<script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.noStyle.js"></script>-->
     <link rel="stylesheet" href="../css/site.css" />
     <link rel="stylesheet" href="../lib/ag-grid/dist/css/ag-grid.css" />
     <link rel="stylesheet" href="../lib/ag-grid/dist/css/ag-theme-balham.css" />
-    <script src="../lib/ag-grid/dist/js/ag-grid-community.js"></script>
+    <script src="../lib/ag-grid/dist/js/ag-grid-enterprise.js"></script>
 </head>
 <body>
     <header>
@@ -23,56 +21,222 @@
         </ul>
     </header>
 
-    <section>
-        <h1>Notes</h1>
+    <section style="height: 600px;">
+        <h2>Notes</h2>
         <div class="button-bar">
             <button onclick="getSelectedRows()">Get Selected Rows</button>
             <button onclick="sizeToFit()">Size to Fit</button>
             <button onclick="autoSizeAll()">Auto-Size All</button>
+            <button onclick="onBtExport()">Export to Excel</button>
+            <button onclick="onBtPrint()">Print</button>
+            <div style="float:left">
+                Page Size:
+                <select onchange="onPageSizeChanged()" id="page-size">
+                    <option value="10" selected>10</option>
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+            </div>
         </div>
-        <div id="myGrid" style="height: 540px; width:1000px;" class="ag-theme-balham"></div>
+        <div id="myGrid" style="height: 540px; width:1200px;" class="ag-theme-balham my-grid"></div>
     </section>
     <footer>
         <small>&copy; 2019 VKC</small>
     </footer>
 
     <script type="text/javascript" charset="utf-8">
+        // SelectedRows
+        function getSelectedRows() {
+            var selectedNodes = gridOptions.api.getSelectedNodes();
+            var selecteddata = selectedNodes.map(function (node) {
+                return node.data
+            }).map(function (node) {
+                return node.UNIQUEKEY + '_' + node.model + '_' + node.A_ACTION
+            }).join(', ');
+            alert('selectNodes: ' + selecteddata);
+        }
+        // Column sizeToFit
+        function sizeToFit() {
+            gridOptions.api.sizeColumnsToFit();
+        }
+        // Column autoSizeAll
+        function autoSizeAll() {
+            var allColumnIds = [];
+            gridOptions.columnApi.getAllColumns().forEach(function (column) {
+                allColumnIds.push(column.colId);
+            });
+            gridOptions.columnApi.autoSizeColumns(allColumnIds.slice(1));
+        }
+        //check box render
+        function booleanCellRenderer(params) {
+            var valueCleaned = params.value;
+            if (valueCleaned === 'T') {
+                return '<input type="checkbox" checked/>';
+            } else if (valueCleaned === 'F') {
+                return '<input type="checkbox" unchecked/>';
+            } else if (params.value !== null && params.value !== undefined) {
+                return params.value.toString();
+            } else {
+                return null;
+            }
+        }
+        // Export
+        function onBtExport() {
+            var params = {
+                skipHeader: false,
+                columnGroups: false,
+                allColumns: true,
+                onlySelected: true,
+                fileName: "export_filename",
+                sheetName: "export_sheet"
+            };
+
+            params.processCellCallback = function (params) {
+                if (params.value && params.value.toUpperCase) {
+                    return params.value.toUpperCase();
+                } else {
+                    return params.value;
+                }
+            }
+
+            params.processHeaderCallback = function (params) {
+                return params.column.getColDef().headerName.toUpperCase();
+            };
+
+            gridOptions.api.exportDataAsExcel(params);
+        }
+        // Print
+        function onBtPrint() {
+            var gridApi = gridOptions.api;
+            setPrinterFriendly(gridApi);
+
+            setTimeout(function () {
+                print();
+                setNormal(gridApi);
+            }, 2000);
+        }
+        function setPrinterFriendly(api) {
+            var eGridDiv = document.querySelector('.my-grid');
+            eGridDiv.style.width = '';
+            eGridDiv.style.height = '';
+
+            api.setDomLayout('print');
+        }
+        function setNormal(api) {
+            var eGridDiv = document.querySelector('.my-grid');
+            eGridDiv.style.width = '1200px';
+            eGridDiv.style.height = '540px';
+
+            api.setDomLayout(null);
+        }
+        // pagination
+        function onPageSizeChanged(newPageSize) {
+            var value = document.getElementById('page-size').value;
+            gridOptions.api.paginationSetPageSize(Number(value));
+        }
+
+        // groupColumn
+        var groupColumn = {
+            headerName: "Group Column",
+            width: 200,
+            headerCheckboxSelection: true,
+            headerCheckboxSelectionFilteredOnly: true,
+            cellRenderer: 'agGroupCellRenderer' 
+        };
+
+        // first check column
         var colDefs = [{
             headerName: "",
-            width: 60,
-            field: "",
-
+            width: 40,
+            field: "selectcol",
+            hide: false,
+            lockPosition: true,
+            lockPinned: true,
+            lockVisible: true,
+            pinned: "left",
+            resizable: false,
+            sortable: false,
+            suppressMenu: true,
+            suppressMovable: true,
+            suppressNavigable: true,
             checkboxSelection: function (params) {
                 return true;
             }
-        }];
-        var autoGroupColumnDef = {
-            headerName: "Model",
-            field: "model",
-            cellRenderer: 'agGroupCellRenderer',
-            cellRendererParams: {
-                checkbox: true
-            }
+        }, {
+            headerName: "Column Group",
+            children: [
+                { headerName: "JOBNUMBER", field: "JOBNUMBER" },
+                { headerName: "NOTEDATE", field: "NOTEDATE" }
+            ],
+            width: 190,
+            filter: 'agDateColumnFilter',
+            toolPanelClass: 'background-color: gold;'
+        }, {
+            headerName: "NOTEDATE",
+            field: "NOTEDATE",
+            width: 190,
+            filter: 'agDateColumnFilter',
+            toolPanelClass: 'background-color: gold;',
+            enableValue: true,
+            allowedAggFuncs: ['sum', 'min', 'max']
         }
-        var gridOptions = {
-            defaultColDef: {
+        ];
 
-            },
-            columnDefs: colDefs,
-            //rowData: rowData,
-            enableSorting: true,
-            enableFilter: true,
-            rowSelection: 'multiple',
+        var gridOptions = {
+            autoGroupColumnDef: groupColumn,
             checkboxSelection: true,
-            pagination: true,
-            paginationPageSize: 20,
+            columnDefs: colDefs,
+            components: {
+                booleanCellRenderer: booleanCellRenderer
+            },
+            defaultExportParams: {
+                columnGroups: true,
+                headerRowHeight: 30,
+                rowHeight: 22
+            },
             defaultColDef: {
-                width: 150,// set every column width
-                editable: false,// make every column editable
-                filter: 'agTextColumnFilter',// make every column use 'text' filter by default
+                width: 180,// set every column width
+                editable: true,// make every column editable
+                enablePivot: true,
+                enableRowGroup: true,
+                enableSorting: true,
+                filter: true,//'agTextColumnFilter',// make every column use 'text' filter by default
                 resizable: true
             },
+            enableFilter: true,
+            enableValue: true,
+            pagination: true,
+            //paginationAutoPageSize: true,
+            paginationNumberFormatter: function (params) {
+                return '[' + params.value.toLocaleString() + ']';
+            },
+            rowDragManaged: true,
+            rowSelection: 'multiple',
+            rowDeselection: true,
+            sideBar: {
+                toolPanels: [
+                    {
+                        id: 'columns',
+                        labelDefault: 'Columns',
+                        labelKey: 'columns',
+                        iconKey: 'columns',
+                        toolPanel: 'agColumnsToolPanel',
+                    },
+                    {
+                        id: 'filters',
+                        labelDefault: 'Filters',
+                        labelKey: 'filters',
+                        iconKey: 'filter',
+                        toolPanel: 'agFiltersToolPanel',
+                    }
+                ],
+                defaultToolPanel: 'columns'
+            },
+            toolPanel: 'columns',
+
         };
+
         //new agGrid.Grid(document.querySelector('#myGrid'), gridOptions);
         // get remote data
         fetch('https://localhost:44364/api/aggrid/GetData').then(function (response) {
@@ -81,44 +245,18 @@
             gridOptions.api.setRowData(data);
         })
         var strColumns;
-        fetch('https://localhost:44364/api/aggrid/GetDataColumns').then(function (response) {
+        fetch('https://localhost:44364/api/aggrid/GetDataColumns/uspGetNotes').then(function (response) {
             return response.json();
         }).then(function (data) {
-            strColumns = '';
-            for (let i = 0; i < 6; i++) {
-                strColumns += '{"headerName":"' + data[i] + '","field":"' + data[i] + '"},';
-            }
-            strColumns = "[" + strColumns.slice(0, -1) + "]";
-            gridOptions.api.setColumnDefs(colDefs.concat(JSON.parse(strColumns)));
+            console.log(data)
+            gridOptions.api.setColumnDefs(colDefs.concat(JSON.parse(data)));
         })
 
-
-        // SelectedRows
-        function getSelectedRows() {
-            var selectedNodes = gridOptions.api.getSelectedNodes();
-            var selecteddata = selectedNodes.map(function (node) {
-                return node.data
-            }).map(function (node) {
-                return node.UNIQUEKEY + '_' + node.model
-            }).join(', ');
-            alert('selectNodes: ' + selecteddata);
-        }
-        function sizeToFit() {
-            gridOptions.api.sizeColumnsToFit();
-        }
-
-        function autoSizeAll() {
-            var allColumnIds = [];
-            gridOptions.columnApi.getAllColumns().forEach(function (column) {
-                allColumnIds.push(column.colId);
-            });
-            gridOptions.columnApi.autoSizeColumns(allColumnIds);
-        }
-
-
+         
         document.addEventListener('DOMContentLoaded', function () {
             var gridDiv = document.querySelector('#myGrid');
             new agGrid.Grid(gridDiv, gridOptions);
+            //agGrid.LicenseManager.setLicenseKey("MTU1NjE0NjgwMDAwMA==5095db85700c871b2d29d9537cd451b3");
 
             // do http request to get our sample data - not using any framework to keep the example self contained.
             // you will probably use a framework like JQuery, Angular or something else to do your HTTP calls.

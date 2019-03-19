@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using AgGridApi.Models.Request;
+using AgGridApi.Models.Response;
 using AgGridApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,26 +14,41 @@ namespace AgGridApi.Controllers
     public class AgGridController : ControllerBase
     {
 
-        private readonly IDemo _demo;
+        private readonly IAGClient _aGClient;
+        private readonly IAGServer _aGServer;
+        private readonly IRequestBuilder _requestBuilder;
 
-        public AgGridController(IDemo demo)
+        public AgGridController(IAGClient demo, IAGServer aGServer, IRequestBuilder requestBuilder)
         {
-            _demo = demo;
+            _aGClient = demo;
+            _aGServer = aGServer;
+            _requestBuilder = requestBuilder;
         }
 
         [HttpGet]
         [Route("GetData")]
         public async Task<string> GetData()
         {
-            return await Task.Run(() => _demo.GetDemoDataSource());
+            return await Task.Run(() => _aGClient.GetDemoDataSource());
         }
 
         [HttpGet]
-        [Route("GetDataColumns")]
-        public async Task<string> GetDataColumns()
+        [Route("GetDataColumns/{datasource}")]
+        public async Task<string> GetDataColumns(string datasource)
         {
-            return await Task.Run(() => _demo.GetDemoDataColumns());
+            return await Task.Run(() => _aGClient.GetDemoDataColumns(datasource));
         }
+
+        [HttpPost]
+        [Route("GetAllData")]
+        public ServerRowsResponse JsonStringBody([FromBody] ServerRowsRequest request)
+        {
+            _requestBuilder.AssignRequest(request);
+
+            return _aGServer.GetData(_requestBuilder);
+        }
+
+        #region operate
 
         // GET: api/<controller>
         [HttpGet]
@@ -46,13 +63,6 @@ namespace AgGridApi.Controllers
         {
             return "value";
         }
-
-        // POST api/<controller>
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
-
         // PUT api/<controller>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody]string value)
@@ -64,5 +74,6 @@ namespace AgGridApi.Controllers
         public void Delete(int id)
         {
         }
+        #endregion
     }
 }

@@ -5,7 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AgGridApi.Common\AgGridApi.Common.csproj" />
+    <ProjectReference Include="..\AgGridApi.Models\AgGridApi.Models.csproj" />
     <ProjectReference Include="..\DataFactory\DataFactory.csproj" />
   </ItemGroup>
 

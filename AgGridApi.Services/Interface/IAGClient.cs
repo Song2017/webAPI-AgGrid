@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 
 namespace AgGridApi.Services
 {
-    public interface IDemo
+    public interface IAGClient
     {
         string GetDemoDataSource();
 
-        string GetDemoDataColumns();
+        string GetDemoDataColumns(string datasource);
     }
 }

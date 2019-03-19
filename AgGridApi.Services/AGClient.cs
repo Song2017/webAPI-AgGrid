@@ -7,11 +7,11 @@ using AgGridApi.Common;
 
 namespace AgGridApi.Services
 {
-    public class Demo : IDemo
+    public class AGClient : IAGClient
     {
         private DataServiceFactory _dataServiceSample;
 
-        public Demo() {
+        public AGClient() {
             DataFactory.DataFactory.ConnectionString = StaticConfigs.GetDBConfig("OracleConnectionString");
             DataFactory.DataFactory.SqlCommandTimeout = int.Parse(StaticConfigs.GetDBConfig("SqlCommandTimeout"));
             _dataServiceSample = new DataServiceFactory();
@@ -19,18 +19,15 @@ namespace AgGridApi.Services
 
         public string GetDemoDataSource()
         {
-            DataTable dtTable = _dataServiceSample.GetNotesByOwnerPlant("AB5DBB3289A348AE87B415498B02749C", 'T');
+            DataTable dtTable = _dataServiceSample.GetNotes("AB5DBB3289A348AE87B415498B02749C", 'T');
             return JsonConvert.SerializeObject(dtTable);
         }
 
-        public string GetDemoDataColumns()
+        public string GetDemoDataColumns(string datasource)
         {
-            DataTable dtTable = _dataServiceSample.GetNotesByOwnerPlant("AB5DBB3289A348AE87B415498B02749C", 'T');
-
-            return JsonConvert.SerializeObject(dtTable.Columns.Cast<DataColumn>().
-                Select(x => x.ColumnName).ToArray());
+            DataTable dataTable = _dataServiceSample.GetGridField("AB5DBB3289A348AE87B415498B02749C", datasource);
+            return JsonConvert.SerializeObject(dataTable.GetHeader(0, 2));
         }
-
-         
+        
     }
 }

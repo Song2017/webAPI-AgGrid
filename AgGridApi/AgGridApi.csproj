@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AgGridApi.Models\AgGridApi.Models.csproj" />
     <ProjectReference Include="..\AgGridApi.Services\AgGridApi.Services.csproj" />
     <ProjectReference Include="..\DataFactory\DataFactory.csproj" />
   </ItemGroup>

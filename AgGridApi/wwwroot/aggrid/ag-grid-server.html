@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ag-grid</title>
+    <!--<script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.noStyle.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>-->
+    <link rel="stylesheet" href="../css/site.css" />
+    <link rel="stylesheet" href="../lib/ag-grid/dist/css/ag-grid.css" />
+    <link rel="stylesheet" href="../lib/ag-grid/dist/css/ag-theme-balham.css" />
+    <script src="../lib/ag-grid/dist/js/ag-grid-enterprise.js"></script>
+    <script src="../lib/ag-grid/dist/js/main.js"></script>
+</head>
+<body>
+    <header>
+        <ul>
+            <li>
+                <a href="../index.html">Home</a>
+            </li>
+        </ul>
+    </header>
+
+    <section style="height: 600px;">
+        <h2>CV Valve</h2>
+        <div class="button-bar">
+            <button onclick="onPaginationNext()">Next Page</button>
+            <button onclick="getSelectedRows()">Get Selected Rows</button>
+            <button onclick="sizeToFit()">Size to Fit</button>
+            <button onclick="autoSizeAll()">Auto-Size All</button>
+            <button onclick="onBtExport()">Export to Excel</button>
+            <button onclick="onBtPrint()">Print</button>
+            <div style="float:left">
+                Page Size:
+                <select onchange="onPageSizeChanged()" id="page-size">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+            </div>
+        </div>
+        <div id="myGrid" style="height: 540px; width:1200px;" class="ag-theme-balham my-grid"></div>
+    </section>
+    <footer>
+        <small>&copy; 2019 VKC</small>
+    </footer> 
+
+</body>
+</html>
