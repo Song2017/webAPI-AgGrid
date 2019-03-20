@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AgGridApi.Common;
 using AgGridApi.Models.Request;
 using AgGridApi.Models.Response;
 using AgGridApi.Services;
@@ -15,34 +16,25 @@ namespace AgGridApi.Controllers
     public class AgGridController : ControllerBase
     {
 
-        private readonly IAGClient _aGClient;
         private readonly IAGServer _aGServer;
         private readonly IRequestBuilder _requestBuilder;
 
-        public AgGridController(IAGClient demo, IAGServer aGServer, IRequestBuilder requestBuilder)
+        public AgGridController(IAGServer aGServer, IRequestBuilder requestBuilder)
         {
-            _aGClient = demo;
             _aGServer = aGServer;
             _requestBuilder = requestBuilder;
         }
 
         [HttpGet]
-        [Route("GetData")]
-        public async Task<string> GetData()
-        {
-            return await Task.Run(() => _aGClient.GetDemoDataSource());
-        }
-
-        [HttpGet]
         [Route("GetDataColumns/{datasource}")]
-        public async Task<string> GetDataColumns(string datasource)
+        public Task<string> GetDataColumns(string datasource)
         {
-            return await Task.Run(() => _aGClient.GetDemoDataColumns(datasource));
+            return Task.Run(() => _aGServer.GetDataColumns(datasource));
         }
 
         [HttpPost]
         [Route("GetAllData")]
-        public ServerRowsResponse JsonStringBody([FromBody] ServerRowsRequest request)
+        public ServerRowsResponse GetAllData([FromBody] ServerRowsRequest request)
         {
             _requestBuilder.AssignRequest(request);
             return _aGServer.GetData(_requestBuilder);

@@ -11,6 +11,8 @@ namespace AgGridApi.Services
     {
         void AssignRequest(ServerRowsRequest request);
 
+        IRequestBuilder GetRequestBuilder(ServerRowsRequest request);
+
         int GetPageIndex();
 
         int GetPageSize();
@@ -18,6 +20,10 @@ namespace AgGridApi.Services
         String GetFilters();
 
         String GetSorts();
+
+        String GetGroups();
+
+        String GetGroupWheres();
     }
 
 }

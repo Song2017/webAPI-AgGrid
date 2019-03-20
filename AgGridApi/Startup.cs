@@ -44,7 +44,6 @@ namespace AgGridApi
             //services.AddScoped<IOperationScoped, Operation>();
             //  Singleton objects are the same for every object and every request 
             //services.AddSingleton<IOperationSingleton, Operation>();
-            services.AddScoped<IAGClient, AGClient>();
             services.AddScoped<IAGServer, AGServer>();
             services.AddTransient<IRequestBuilder, RequestBuilder>(); 
             //Cors policy is added to controllers via [EnableCors("CorsPolicy")]

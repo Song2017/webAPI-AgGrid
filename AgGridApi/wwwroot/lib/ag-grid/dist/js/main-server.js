@@ -14,18 +14,19 @@ var columnDefs = [
         lockVisible: true, pinned: "left", resizable: false, sortable: false, filter: false,
         suppressMenu: true, suppressMovable: true, suppressNavigable: true,
         checkboxSelection: function (params) { return true; }
-    },
+    }, 
     {
         headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
         filterParams: {defaultOption: 'startsWith'}
     },
     {
-        headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,
-        enableRowGroup: true, filter: 'agTextColumnFilter',
+        headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,  filter: 'agTextColumnFilter',
         floatingFilterComponentParams: {debounceMs: 2000}
     },
+    { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true },
+    { headerName: "OWNERKEY", field: "ownerkey", enableRowGroup: true },
     {
-        headerName: "Valve Size", field: "valvesize", filter: 'agNumberColumnFilter'
+        headerName: "Valve Size", field: "valvesize", filter: 'agNumberColumnFilter', enableRowGroup: true,
     },
     { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' }
 ];
@@ -49,7 +50,11 @@ var gridOptions = {
         sortable: true, //enable server sort
         resizable: true,
         suppressNavigable: true,
-        menuTabs: ['filterMenuTab', 'generalMenuTab']
+        menuTabs: ['filterMenuTab', 'generalMenuTab'],
+        filterParams: {
+            newRowsAction: 'keep'
+        },
+        allowedAggFuncs: ['count']
     },
     floatingFilter: true,
     autoGroupColumnDef: groupColumn,
@@ -57,7 +62,7 @@ var gridOptions = {
     multiSortKey: 'ctrl',
     debug: false,
 
-    rowModelType: 'infinite',
+    rowModelType: 'serverSide',
     rowDragManaged: true,
     rowSelection: 'multiple',
     rowDeselection: true,
@@ -101,40 +106,33 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch('https://localhost:44364/api/aggrid/GetDataColumns/uspGetCVList').then(function (response) {
         return response.json();
     }).then(function (data) {
-        console.log(JSON.parse(data))
         gridOptions.api.setColumnDefs(columnDefs.concat(JSON.parse(data)));
     })
-
-    gridOptions.api.setDatasource(EnterpriseDatasource);
+    var datasource = new EnterpriseDatasource();
+    gridOptions.api.setServerSideDatasource(datasource);
 });
 
+
 // Datasource
-var EnterpriseDatasource = {
-    rowCount: 100,
-    getRows: function (params) {
-        var request = params;
-        request['PageIndex'] = agPagination.PageIndex;
-        request['PageSize'] = agPagination.PageSize;
-        request['filterModel'] = formatFilterModel(request.filterModel);
-        let jsonRequest = JSON.stringify(request, null, 2);
-        let httpRequest = new XMLHttpRequest();
-        varrequestjson = jsonRequest
-        httpRequest.open('POST', 'https://localhost:44364/api/aggrid/GetAllData');
-        httpRequest.setRequestHeader("Content-type", "application/json");
-        httpRequest.send(jsonRequest);
-        httpRequest.onreadystatechange = () => {
-            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-                let result = JSON.parse(httpRequest.responseText);
-                vkresult = result;
-                var newDataLength = result.data.length;
-                if (newDataLength === 0 || newDataLength < agPagination.PageSize) {
-                    agPagination.lastRow = agPagination.PageIndex * agPagination.PageSize + newDataLength;
-                }
-                params.successCallback(result.data, result.lastRow);
-            }
-        };
-    }
-}
+function EnterpriseDatasource() { }
+EnterpriseDatasource.prototype.getRows = function (params) {
+    var request = params.request;
+    request['pageIndex'] = agPagination.PageIndex;
+    request['pageSize'] = agPagination.PageSize;
+    request['filterModel'] = formatFilterModel(request.filterModel);
+    requestForServer = JSON.stringify(request, null, 2);
+
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.open('POST', 'https://localhost:44364/api/aggrid/GetAllData');
+    httpRequest.setRequestHeader("Content-type", "application/json");
+    httpRequest.send(requestForServer);
+    httpRequest.onreadystatechange = function () {
+        if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+            httpResponseForServer = JSON.parse(httpRequest.responseText);
+            params.successCallback(httpResponseForServer.data, httpResponseForServer.lastRow);
+        }
+    };
+};
 
 
 // Functions

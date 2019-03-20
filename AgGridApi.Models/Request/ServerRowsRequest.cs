@@ -9,10 +9,10 @@ namespace AgGridApi.Models.Request
 {
     public class ServerRowsRequest
     {
-        [JsonProperty("pageIndex")]
         // start from 0
+        [JsonProperty("pageIndex", NullValueHandling = NullValueHandling.Ignore)]
         public int PageIndex { set; get; }
-        [JsonProperty("pageSize")]
+        [JsonProperty("pageSize", NullValueHandling = NullValueHandling.Ignore)]
         public int PageSize { set; get; }
 
         public int StartRow { set; get; }

@@ -4,85 +4,55 @@ using AgGridApi.Models.Filter;
 using AgGridApi.Models.Request;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace AgGridApi.Services
 {
     public class RequestBuilder : IRequestBuilder
     {
-        public int PageIndex { get; set; }
-        public int PageSize { get; set; }
         public string Alias { get; set; } = "r.";
 
-        private List<SortModel> _sortModel;
+        private ServerRowsRequest _serverRowsRequest;
+        private List<SortModel> _sortModels;
+        private List<ColumnFilter> _filterModels;
 
-        private List<String> groupKeys;
-        private List<String> rowGroups;
-        private Boolean isGrouping;
-        private List<ColumnVO> valueColumns;
-        private List<ColumnVO> pivotColumns;
-        private List<ColumnFilter> filterModels;
-        private List<ColumnVO> rowGroupCols;
         private Dictionary<String, List<String>> pivotValues;
-        private Boolean isPivotMode;
+
 
         public RequestBuilder() { }
 
-        public RequestBuilder(ServerRowsRequest request, Dictionary<String, List<String>> pivotValues)
+        public RequestBuilder(ServerRowsRequest request)
         {
-            this.pivotValues = pivotValues;
-
             AssignRequest(request);
-        }
+        } 
 
-        private String groupBySql()
-        {
-            return isGrouping ? string.Join(",", rowGroups) : "";
-        }
-
-        private List<String> getRowGroups()
-        {
-            List<String> rg = new List<string>();
-            foreach (var group in rowGroupCols)
-            {
-                rg.Add(group.Field.ToStringEx());
-            }
-            return rg;
-        }
 
         public void AssignRequest(ServerRowsRequest request)
         {
-            this.valueColumns = request.ValueCols;
-            this.pivotColumns = request.PivotCols;
-            this.groupKeys = request.GroupKeys;
-            this.rowGroupCols = request.RowGroupCols;
-            this.isPivotMode = request.IsPivotMode;
-            this.filterModels = request.FilterModels;
-            this._sortModel = request.SortModels;
-            this.PageIndex = request.PageIndex;
-            this.PageSize = request.PageSize;
+            _serverRowsRequest = request;
 
-            this.rowGroups = getRowGroups();
-            this.isGrouping = rowGroups.Count > groupKeys.Count;
+            _filterModels = request.FilterModels;
+            _sortModels = request.SortModels;
         }
 
         public int GetPageIndex()
         {
-            return PageIndex + 1;
+            return _serverRowsRequest.PageIndex + 1;
         }
 
         public int GetPageSize()
         {
-            return PageSize;
+            return _serverRowsRequest.PageSize;
         }
 
         public String GetFilters()
         {
-            if (filterModels.Count <= 0)
+            if (_filterModels.Count <= 0)
                 return string.Empty;
 
             StringBuilder filters = new StringBuilder(" 1=1 ");
-            foreach (ColumnFilter filterModel in filterModels)
+            foreach (ColumnFilter filterModel in _filterModels)
             {
                 filters.Append(" AND (");
                 for (int i = 0; i < filterModel.Condition.Count; i++)
@@ -211,17 +181,50 @@ namespace AgGridApi.Services
 
         public String GetSorts()
         {
-            if (_sortModel.Count <= 0)
+            if (_sortModels.Count <= 0)
                 return string.Empty;
 
             StringBuilder sorts = new StringBuilder(Constants.WHITESPACE);
-            foreach (SortModel sort in _sortModel)
+            foreach (SortModel sort in _sortModels)
             {
                 sorts.Append(Constants.WHITESPACE + sort.ColId.ToUpper() + Constants.WHITESPACE).
                     Append(sort.Sort.ToUpper() + Constants.COMMA);
             }
 
             return sorts.ToStringEx().TrimLastCharacter();
+        }
+
+        public string GetGroups()
+        {
+            if (_serverRowsRequest.RowGroupCols.Count == 0 ||
+                _serverRowsRequest.GroupKeys.Count > 0)
+                return string.Empty;
+
+            return string.Join(",", _serverRowsRequest.RowGroupCols
+                .Select(s => s.Id));
+        }
+
+        public string GetGroupWheres()
+        {
+            if (_serverRowsRequest.RowGroupCols.Count == 0 ||
+                _serverRowsRequest.GroupKeys.Count == 0)
+                return string.Empty;
+            string where = string.Empty;
+            for (int i = 0; i < _serverRowsRequest.GroupKeys.Count; i++)
+            {
+                where += " and " + _serverRowsRequest.RowGroupCols[i].Id +
+                    " = '" + _serverRowsRequest.GroupKeys[i] + "'";
+            }
+
+            return where.ToStringEx();
+        }
+
+        public IRequestBuilder GetRequestBuilder(ServerRowsRequest request)
+        {
+            if (request == null)
+                return new RequestBuilder(_serverRowsRequest);
+            else
+                return new RequestBuilder(request);
         }
     }
 
