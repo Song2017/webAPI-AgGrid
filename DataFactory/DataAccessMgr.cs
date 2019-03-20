@@ -97,7 +97,7 @@ namespace DataFactory
                     AddParams(cmd, parameters, false);
                     cmd.Connection = conn;
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.CommandTimeout = 30;
+                    cmd.CommandTimeout = DataFactory.SqlCommandTimeout;
 
                     if (conn.State == ConnectionState.Closed || conn.State == ConnectionState.Broken)
                     {
@@ -148,7 +148,7 @@ namespace DataFactory
                     AddParams(cmd, parameters);
                     cmd.Connection = conn;
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.CommandTimeout = 30;
+                    cmd.CommandTimeout = DataFactory.SqlCommandTimeout;
 
                     if (conn.State == ConnectionState.Closed || conn.State == ConnectionState.Broken)
                     {

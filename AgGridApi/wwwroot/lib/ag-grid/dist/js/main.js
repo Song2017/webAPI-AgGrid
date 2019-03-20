@@ -17,21 +17,17 @@ var columnDefs = [
     },
     {
         headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
-        filterParams: {
-            defaultOption: 'startsWith'
-        }
+        filterParams: {defaultOption: 'startsWith'}
     },
     {
         headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,
         enableRowGroup: true, filter: 'agTextColumnFilter',
-        floatingFilterComponentParams: {
-            debounceMs: 2000
-        }
+        floatingFilterComponentParams: {debounceMs: 2000}
     },
-    { headerName: "LOCATION", field: "location" },
     {
-        headerName: "# Events/Repairs", field: "eventcount", filter: 'agNumberColumnFilter'
-    }
+        headerName: "Valve Size", field: "valvesize", filter: 'agNumberColumnFilter'
+    },
+    { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' }
 ];
 
 // groupColumn

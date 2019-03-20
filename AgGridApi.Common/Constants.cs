@@ -7,7 +7,8 @@ namespace AgGridApi.Common
     public static class Constants
     {
         public const string WHITESPACE = @" ";
-        public const string COMMA = @","; 
+        public const string COMMA = @",";
+        public const string DATEFORMAT = @"yyyy-mm-dd hh24:mi:ss";
     }
 
 

@@ -26,7 +26,7 @@ namespace AgGridApi.Services
         private Dictionary<String, List<String>> pivotValues;
         private Boolean isPivotMode;
 
-        public RequestBuilder() { } 
+        public RequestBuilder() { }
 
         public RequestBuilder(ServerRowsRequest request, Dictionary<String, List<String>> pivotValues)
         {
@@ -87,11 +87,11 @@ namespace AgGridApi.Services
                 filters.Append(" AND (");
                 for (int i = 0; i < filterModel.Condition.Count; i++)
                 {
-                    filters.Append(GetFilterCondition(filterModel.Condition[i], filterModel.Head.Field));
+                    filters.Append(GetFilterCondition(filterModel.Condition[i], filterModel.Head.Field.ToUpper()));
                     if (i + 1 < filterModel.Condition.Count)
                         filters.Append(Constants.WHITESPACE + filterModel.Head.Operate.ToStringEx() + Constants.WHITESPACE);
                 }
-                
+
                 filters.Append(") ");
             }
 
@@ -101,30 +101,32 @@ namespace AgGridApi.Services
         private string GetFilterCondition(ConditionFilterModel conditionFilterModel, string field)
         {
             StringBuilder condition = new StringBuilder();
-            switch (conditionFilterModel.FilterType) {
+            switch (conditionFilterModel.FilterType)
+            {
 
                 case FilterConditionType.TEXT:
-                    switch(conditionFilterModel.Type){
+                    switch (conditionFilterModel.Type)
+                    {
                         case FilterType.EQUALS:
-                            condition.Append($" Upper({field}) = Upper('{conditionFilterModel.Filter}') " );
+                            condition.Append($" UPPER({field}) = UPPER('{conditionFilterModel.Filter}') ");
                             break;
                         case FilterType.NOT_EQUAL:
-                            condition.Append($" Upper({field}) != Upper('{conditionFilterModel.Filter}') ");
+                            condition.Append($" UPPER({field}) != UPPER('{conditionFilterModel.Filter}') ");
                             break;
                         case FilterType.STARTS_WITH:
-                            condition.Append($" Upper({field}) like Upper('{conditionFilterModel.Filter}%') ");
+                            condition.Append($" UPPER({field}) LIKE UPPER('{conditionFilterModel.Filter}%') ");
                             break;
                         case FilterType.ENDS_WITH:
-                            condition.Append($" Upper({field}) like Upper('%{conditionFilterModel.Filter}') ");
+                            condition.Append($" UPPER({field}) LIKE UPPER('%{conditionFilterModel.Filter}') ");
                             break;
                         case FilterType.CONTAINS:
-                            condition.Append($" Instr(Upper({field}), Upper('{conditionFilterModel.Filter}')) > 0 ");
+                            condition.Append($" INSTR(UPPER({field}), UPPER('{conditionFilterModel.Filter}')) > 0 ");
                             break;
                         case FilterType.NOT_CONTAINS:
-                            condition.Append($" Instr(Upper({field}), Upper('{conditionFilterModel.Filter}')) = 0 ");
+                            condition.Append($" INSTR(UPPER({field}), UPPER('{conditionFilterModel.Filter}')) = 0 ");
                             break;
                         default:
-                            condition.Append($" Instr(Upper({field}), Upper('{conditionFilterModel.Filter}')) > 0 ");
+                            condition.Append($" INSTR(UPPER({field}), UPPER('{conditionFilterModel.Filter}')) > 0 ");
                             break;
                     }
                     break;
@@ -150,8 +152,8 @@ namespace AgGridApi.Services
                             condition.Append($" {field} >= {conditionFilterModel.Filter} ");
                             break;
                         case FilterType.IN_RANGE:
-                            condition.Append($" {field} >= {conditionFilterModel.Filter} And " +
-                                $"{field} <= {conditionFilterModel.FilterTo}");
+                            condition.Append($" {field} BETWEEN {conditionFilterModel.Filter} " +
+                                $"and {conditionFilterModel.FilterTo}");
                             break;
                         default:
                             condition.Append($" {field} = {conditionFilterModel.Filter} ");
@@ -159,7 +161,44 @@ namespace AgGridApi.Services
                     }
                     break;
                 case FilterConditionType.DATE:
-
+                    switch (conditionFilterModel.Type)
+                    {
+                        case FilterType.EQUALS:
+                            condition.Append($" {field} = '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.NOT_EQUAL:
+                            condition.Append($" {field} != '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.LESS_THAN:
+                            condition.Append($" {field} < '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.GREATER_THAN:
+                            condition.Append($" {field} > '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.IN_RANGE:
+                            condition.Append($" {field} BETWEEN '{conditionFilterModel.DateFrom}' " +
+                                $"and '{conditionFilterModel.DateTo}' ");
+                            break;
+                        //case FilterType.EQUALS:
+                        //    condition.Append($" {field} = TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.NOT_EQUAL:
+                        //    condition.Append($" {field} != TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.LESS_THAN:
+                        //    condition.Append($" {field} < TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.GREATER_THAN:
+                        //    condition.Append($" {field} > TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.IN_RANGE:
+                        //    condition.Append($" {field} BETWEEN TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') " +
+                        //        $"and TO_DATE('{conditionFilterModel.DateTo}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        default:
+                            condition.Append($" {field} = TO_DATE('{conditionFilterModel.Filter}','{Constants.DATEFORMAT}') ");
+                            break;
+                    }
                     break;
                 case FilterConditionType.SET:
                     break;
@@ -183,7 +222,7 @@ namespace AgGridApi.Services
             }
 
             return sorts.ToStringEx().TrimLastCharacter();
-        } 
+        }
     }
 
 }
