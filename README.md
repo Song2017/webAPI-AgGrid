@@ -1,5 +1,11 @@
 # AgGridAPI
-This is a simple aggrid with .net core 2.2 web api framework, aim to use aggrid with web api on .net core.
+This is a simple aggrid with  web api framework, aim to use aggrid with web api on .net core.     
+Simply, aggrid send params to server, and transfer to procedure then get data from Database.     
+- parameter(filterModels, sortModels..): Client(browser) => Server(.net core 2.2) => Oracle DB(procedure)    
+
+## Function
+1. Infinite Mode: Pagination, Filter, Sort
+2. Server Mode: Pagination, Filter, Sort, Group by
 
 ## Front End
 HTML5 + CSS + Ag-grid + JavaScript
@@ -42,18 +48,15 @@ Oracle: config connection in dbsettting.json
         }
 
         [HttpGet]
-        [Route("GetData")]
-        public async Task<string> GetData()
+        [Route("GetDataColumns/{datasource}")]
+        public Task<string> GetDataColumns(string datasource)
         {
-            return await Task.Run(() => _demo.GetDemoDataSource());
+            return Task.Run(() => _aGServer.GetDataColumns(datasource));
         }
         ...
      }
 ```
-3. wwwroot: 前端文件
-4. 下面是文件结构图
-	![在这里插入图片描述](https://img-blog.csdnimg.cn/20190220193353745.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NnczU5NTU5NQ==,size_16,color_FFFFFF,t_70)
-###	AgGridApi.Common 公用方法项目
+3. wwwroot: 前端文件 
 5. StaticConfigs: 读取dbsettings.json中的参数, 并作为静态类使用.
 	推荐绑定类读取的方式.
 ```
