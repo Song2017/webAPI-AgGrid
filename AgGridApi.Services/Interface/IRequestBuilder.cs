@@ -15,7 +15,7 @@ namespace AgGridApi.Services
 
         int GetPageSize();
 
-        List<String> GetFilters();
+        String GetFilters();
 
         String GetSorts();
     }

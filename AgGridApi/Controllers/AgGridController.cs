@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AgGridApi.Common;
 using AgGridApi.Models.Request;
 using AgGridApi.Models.Response;
 using AgGridApi.Services;
@@ -44,7 +46,6 @@ namespace AgGridApi.Controllers
         public ServerRowsResponse JsonStringBody([FromBody] ServerRowsRequest request)
         {
             _requestBuilder.AssignRequest(request);
-
             return _aGServer.GetData(_requestBuilder);
         }
 

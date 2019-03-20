@@ -16,11 +16,18 @@ var columnDefs = [
         checkboxSelection: function (params) { return true; }
     },
     {
-        headerName: "UNIQUEKEY", field: "uniquekey", rowGroup: false, filter: 'agTextColumnFilter', filterParams: {
+        headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
+        filterParams: {
             defaultOption: 'startsWith'
         }
     },
-    { headerName: "TAGNUMBER11", field: "tagnumber", sortable: true, filter: 'agTextColumnFilter',  debounceMs: 2000 },
+    {
+        headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,
+        enableRowGroup: true, filter: 'agTextColumnFilter',
+        floatingFilterComponentParams: {
+            debounceMs: 2000
+        }
+    },
     { headerName: "LOCATION", field: "location" },
     {
         headerName: "# Events/Repairs", field: "eventcount", filter: 'agNumberColumnFilter'
@@ -30,8 +37,7 @@ var columnDefs = [
 // groupColumn
 var groupColumn = {
     headerName: "Group Column",
-    width: 200,
-    headerCheckboxSelection: true,
+    width: 200, 
     headerCheckboxSelectionFilteredOnly: true,
     cellRenderer: 'agGroupCellRenderer'
 };
@@ -43,7 +49,8 @@ var gridOptions = {
         enablePivot: false,
         enableRowGroup: false,
         enableSorting: true,
-        filter: true,// make every column use 'text' filter by default
+        filter: true,// enable filter sort
+        sortable: true, //enable server sort
         resizable: true,
         suppressNavigable: true,
         menuTabs: ['filterMenuTab', 'generalMenuTab']
@@ -54,19 +61,16 @@ var gridOptions = {
     multiSortKey: 'ctrl',
     debug: false,
 
-    checkboxSelection: true,
     rowModelType: 'infinite',
     rowDragManaged: true,
     rowSelection: 'multiple',
     rowDeselection: true,
     rowGroupPanelShow: 'always',
 
-    //let it equal min(pagesize), in case no data to show 
+    //cacheBlockSize: min(pagesize), in case no data to show
     cacheBlockSize: 10,//Lazy-loading: with the grid options property: cacheBlockSize = 100 data will be fetched in blocks of 100 rows at a time.
     maxBlocksInCache: 1000,//to limit the amount of data cached in the grid you can set maxBlocksInCache via the gridOptions.
-    infiniteInitialRowCount: 5,//How many rows to initially allow the user to scroll to.
-    enableServerSideSorting: true,
-    enableServerSideFilter: true,
+    infiniteInitialRowCount: 5,//How many rows to initially allow the user to scroll to. 
     animateRows: true,
     pagination: true,
     paginationPageSize: 10,
@@ -115,6 +119,7 @@ var EnterpriseDatasource = {
         var request = params;
         request['PageIndex'] = agPagination.PageIndex;
         request['PageSize'] = agPagination.PageSize;
+        request['filterModel'] = formatFilterModel(request.filterModel);
         let jsonRequest = JSON.stringify(request, null, 2);
         let httpRequest = new XMLHttpRequest();
         varrequestjson = jsonRequest
@@ -159,7 +164,7 @@ function autoSizeAll() {
     });
     gridOptions.columnApi.autoSizeColumns(allColumnIds.slice(1));
 }
-//check box render
+// Check box render
 function booleanCellRenderer(params) {
     var valueCleaned = params.value;
     if (valueCleaned === 'T') {
@@ -221,7 +226,7 @@ function setNormal(api) {
 
     api.setDomLayout(null);
 }
-// pagination
+// Pagination
 function onPageSizeChanged() {
     let value = Number(document.getElementById('page-size').value);
     gridOptions.api.paginationSetPageSize(value);
@@ -236,4 +241,30 @@ function onPaginationChanged() {
     if (gridOptions.api) {
         agPagination.PageIndex = gridOptions.api.paginationGetCurrentPage();
     }
+}
+// Filter
+function formatFilterModel(filterModels) {
+    let aryFilter = []
+    let objChild = {}
+    let aryCondition = []
+    for (let filter in filterModels) {
+        if (filterModels[filter].operator) {
+            objChild["head"] = { "field": filter, "operate": filterModels[filter].operator };
+
+            if (filterModels[filter].condition1)
+                aryCondition.push(filterModels[filter].condition1);
+            if (filterModels[filter].condition2)
+                aryCondition.push(filterModels[filter].condition2);
+        }
+        else {
+            objChild["head"] ={ "field": filter, "operate": "" };
+            aryCondition.push(filterModels[filter]);
+        }
+        objChild["condition"] = aryCondition;
+        aryFilter.push(objChild);
+        aryCondition = [];
+        objChild = {};
+    }
+
+    return aryFilter;
 }

@@ -20,23 +20,13 @@ namespace AgGridApi.Services
             DataFactory.DataFactory.ConnectionString = StaticConfigs.GetDBConfig("OracleConnectionString");
             DataFactory.DataFactory.SqlCommandTimeout = int.Parse(StaticConfigs.GetDBConfig("SqlCommandTimeout"));
             _dataServiceSample = new DataServiceFactory();
-        }
-
-        public ServerRowsResponse GetData(ServerRowsRequest request)
-        {
-            int pageCount = 0;
-            
-            DataTable dtTable = _dataServiceSample.GetBigDataPage("AB5DBB3289A348AE87B415498B02749C", 0, string.Empty,
-                 request.PageIndex + 1, request.PageSize, ref pageCount);
-
-            return ResponseBuilder(dtTable, pageCount);
-        }
+        } 
 
         public ServerRowsResponse GetData(IRequestBuilder requestBuilder)
         {
             int pageCount = 0;
 
-            DataTable dtTable = _dataServiceSample.GetBigDataPage("AB5DBB3289A348AE87B415498B02749C", 0,
+            DataTable dtTable = _dataServiceSample.GetBigDataPage("AB5DBB3289A348AE87B415498B02749C", 0, requestBuilder.GetFilters(),
                  requestBuilder.GetSorts(), requestBuilder.GetPageIndex(), requestBuilder.GetPageSize(), ref pageCount);
 
             return ResponseBuilder(dtTable, pageCount);

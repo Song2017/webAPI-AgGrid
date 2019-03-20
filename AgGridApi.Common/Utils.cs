@@ -9,14 +9,16 @@ namespace AgGridApi.Common
 {
     public static class Utils
     {
-        public static string ToStringEx(this object obj)
-        {
-            if (obj == null)
-                return string.Empty;
-            else
-                return obj.ToString();
-        }
-
+        // Grid Customized
+        // Aim to customize column with database
+        /// <summary>
+        /// set grid header
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="indexField"></param>
+        /// <param name="indexCaption"></param>
+        /// <param name="isVisble"></param>
+        /// <returns></returns>
         public static string GetHeader(this DataTable dt, int indexField, int indexCaption, bool isVisble = true)
         {
             DataRow[] dataRows;
@@ -24,7 +26,8 @@ namespace AgGridApi.Common
             {
                 dataRows = dt.Select("VISIBLE=1");
             }
-            else {
+            else
+            {
                 dataRows = dt.Select("VISIBLE!=1");
             }
             StringBuilder stringBuilder = new StringBuilder("[");
@@ -44,6 +47,8 @@ namespace AgGridApi.Common
             return stringBuilder.ToStringEx();
         }
 
+
+        // Json Extension
         public static string SerializeToJSON(object obj)
         {
             return JsonConvert.SerializeObject(obj);
@@ -52,6 +57,16 @@ namespace AgGridApi.Common
         public static T DeserializeFromJSON<T>(string json)
         {
             return JsonConvert.DeserializeObject<T>(json.ToStringUD());
+        }
+
+
+        // String Extension
+        public static string ToStringEx(this object obj)
+        {
+            if (obj == null)
+                return string.Empty;
+            else
+                return obj.ToString();
         }
 
         public static string ToStringUD(this object obj)
@@ -73,6 +88,12 @@ namespace AgGridApi.Common
                 return str.TrimEnd(str[str.Length - 1]);
             }
         }
+
+        public static bool IsNullOrEmptyOrSpace(this String str)
+        {
+            return string.IsNullOrEmpty(str) ?
+                true : string.IsNullOrWhiteSpace(str);
+        }
     }
-     
+
 }

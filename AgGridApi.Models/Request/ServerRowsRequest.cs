@@ -1,4 +1,5 @@
 ﻿using AgGridApi.Models.Filter;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,10 @@ namespace AgGridApi.Models.Request
 {
     public class ServerRowsRequest
     {
+        [JsonProperty("pageIndex")]
         // start from 0
         public int PageIndex { set; get; }
-
+        [JsonProperty("pageSize")]
         public int PageSize { set; get; }
 
         public int StartRow { set; get; }
@@ -32,20 +34,23 @@ namespace AgGridApi.Models.Request
         // what groups the user is viewing
         public List<String> GroupKeys { set; get; }
 
-        // if filtering, what the filter model is
-        public Dictionary<String, ColumnFilter> FilterModel { set; get; }
 
+        [JsonProperty("filterModel")]
+        // if filtering, what the filter model is
+        public List<ColumnFilter> FilterModels { get; set; }
+
+        [JsonProperty("sortModel")]
         // if sorting, what the sort model is
-        public List<SortModel> SortModel { set; get; }
+        public List<SortModel> SortModels { set; get; }
 
         public ServerRowsRequest()
         {
-            this.RowGroupCols = new List<ColumnVO>();
-            this.ValueCols = new List<ColumnVO>();
-            this.PivotCols = new List<ColumnVO>();
-            this.GroupKeys = new List<String>();
-            this.FilterModel = new Dictionary<string, ColumnFilter>();
-            this.SortModel = new List<SortModel>();
+            RowGroupCols = new List<ColumnVO>();
+            ValueCols = new List<ColumnVO>();
+            PivotCols = new List<ColumnVO>();
+            GroupKeys = new List<String>();
+            FilterModels = new List<ColumnFilter>();
+            SortModels = new List<SortModel>();
         }
     }
 }

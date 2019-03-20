@@ -21,35 +21,18 @@ namespace AgGridApi.Services
         private Boolean isGrouping;
         private List<ColumnVO> valueColumns;
         private List<ColumnVO> pivotColumns;
-        private Dictionary<String, ColumnFilter> filterModel;
+        private List<ColumnFilter> filterModels;
         private List<ColumnVO> rowGroupCols;
         private Dictionary<String, List<String>> pivotValues;
         private Boolean isPivotMode;
-        private ServerRowsRequest enterpriseGetRowsRequest;
-        private Dictionary<String, String> operatorMap = new Dictionary<String, String>()
-         {
-            {"equals", "="},
-            {"notEqual", "<>"},
-            {"lessThan", "<"},
-            {"lessThanOrEqual", "<="},
-            {"greaterThan", ">"},
-            {"greaterThanOrEqual", ">="}
-        };
-        public RequestBuilder() { }
-        public RequestBuilder(ServerRowsRequest request)
-        {
-            enterpriseGetRowsRequest = request;
-            AssignRequest(request);
-        }
 
-        public RequestBuilder(ServerRowsRequest request, String tableName, Dictionary<String, List<String>> pivotValues)
+        public RequestBuilder() { } 
+
+        public RequestBuilder(ServerRowsRequest request, Dictionary<String, List<String>> pivotValues)
         {
-            enterpriseGetRowsRequest = request;
             this.pivotValues = pivotValues;
 
             AssignRequest(request);
-
-            // return selectSql() + fromSql(tableName) + whereSql() + groupBySql() + orderBySql() + limitSql();
         }
 
         private String groupBySql()
@@ -74,16 +57,17 @@ namespace AgGridApi.Services
             this.groupKeys = request.GroupKeys;
             this.rowGroupCols = request.RowGroupCols;
             this.isPivotMode = request.IsPivotMode;
-            this.filterModel = request.FilterModel;
-            this._sortModel = request.SortModel;
+            this.filterModels = request.FilterModels;
+            this._sortModel = request.SortModels;
             this.PageIndex = request.PageIndex;
             this.PageSize = request.PageSize;
- 
+
             this.rowGroups = getRowGroups();
             this.isGrouping = rowGroups.Count > groupKeys.Count;
         }
 
-        public int GetPageIndex() { 
+        public int GetPageIndex()
+        {
             return PageIndex + 1;
         }
 
@@ -92,17 +76,98 @@ namespace AgGridApi.Services
             return PageSize;
         }
 
-        public List<String> GetFilters()
+        public String GetFilters()
         {
-            List<string> filters = new List<string>();
-            if (filterModel == null)
-                return filters;
-            if (filterModel.GetType().Equals("text"))
+            if (filterModels.Count <= 0)
+                return string.Empty;
+
+            StringBuilder filters = new StringBuilder(" 1=1 ");
+            foreach (ColumnFilter filterModel in filterModels)
             {
+                filters.Append(" AND (");
+                for (int i = 0; i < filterModel.Condition.Count; i++)
+                {
+                    filters.Append(GetFilterCondition(filterModel.Condition[i], filterModel.Head.Field));
+                    if (i + 1 < filterModel.Condition.Count)
+                        filters.Append(Constants.WHITESPACE + filterModel.Head.Operate.ToStringEx() + Constants.WHITESPACE);
+                }
                 
+                filters.Append(") ");
             }
 
-            return new List<string>();
+            return filters.ToStringEx();
+        }
+
+        private string GetFilterCondition(ConditionFilterModel conditionFilterModel, string field)
+        {
+            StringBuilder condition = new StringBuilder();
+            switch (conditionFilterModel.FilterType) {
+
+                case FilterConditionType.TEXT:
+                    switch(conditionFilterModel.Type){
+                        case FilterType.EQUALS:
+                            condition.Append($" Upper({field}) = Upper('{conditionFilterModel.Filter}') " );
+                            break;
+                        case FilterType.NOT_EQUAL:
+                            condition.Append($" Upper({field}) != Upper('{conditionFilterModel.Filter}') ");
+                            break;
+                        case FilterType.STARTS_WITH:
+                            condition.Append($" Upper({field}) like Upper('{conditionFilterModel.Filter}%') ");
+                            break;
+                        case FilterType.ENDS_WITH:
+                            condition.Append($" Upper({field}) like Upper('%{conditionFilterModel.Filter}') ");
+                            break;
+                        case FilterType.CONTAINS:
+                            condition.Append($" Instr(Upper({field}), Upper('{conditionFilterModel.Filter}')) > 0 ");
+                            break;
+                        case FilterType.NOT_CONTAINS:
+                            condition.Append($" Instr(Upper({field}), Upper('{conditionFilterModel.Filter}')) = 0 ");
+                            break;
+                        default:
+                            condition.Append($" Instr(Upper({field}), Upper('{conditionFilterModel.Filter}')) > 0 ");
+                            break;
+                    }
+                    break;
+                case FilterConditionType.NUMBER:
+                    switch (conditionFilterModel.Type)
+                    {
+                        case FilterType.EQUALS:
+                            condition.Append($" {field} = {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.NOT_EQUAL:
+                            condition.Append($" {field} != {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.LESS_THAN:
+                            condition.Append($" {field} < {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.LESS_THAN_OR_EQUAL:
+                            condition.Append($" {field} <= {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.GREATER_THAN:
+                            condition.Append($" {field} > {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.GREATER_THAN_OR_EQUAL:
+                            condition.Append($" {field} >= {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.IN_RANGE:
+                            condition.Append($" {field} >= {conditionFilterModel.Filter} And " +
+                                $"{field} <= {conditionFilterModel.FilterTo}");
+                            break;
+                        default:
+                            condition.Append($" {field} = {conditionFilterModel.Filter} ");
+                            break;
+                    }
+                    break;
+                case FilterConditionType.DATE:
+
+                    break;
+                case FilterConditionType.SET:
+                    break;
+                default: break;
+            }
+
+
+            return condition.ToStringEx();
         }
 
         public String GetSorts()
@@ -110,18 +175,15 @@ namespace AgGridApi.Services
             if (_sortModel.Count <= 0)
                 return string.Empty;
 
-            StringBuilder sorts = new StringBuilder(Constants.whiteSpace);
+            StringBuilder sorts = new StringBuilder(Constants.WHITESPACE);
             foreach (SortModel sort in _sortModel)
             {
-                sorts.Append(Constants.whiteSpace + sort.ColId.ToUpper() + Constants.whiteSpace).
-                    Append(sort.Sort.ToUpper() + Constants.comma);
+                sorts.Append(Constants.WHITESPACE + sort.ColId.ToUpper() + Constants.WHITESPACE).
+                    Append(sort.Sort.ToUpper() + Constants.COMMA);
             }
 
             return sorts.ToStringEx().TrimLastCharacter();
-        }
-
-
-
+        } 
     }
 
 }

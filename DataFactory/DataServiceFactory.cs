@@ -43,8 +43,8 @@ namespace DataFactory
             return ds.Tables[tabIndex];
         }
 
-        public DataTable GetBigDataPage(string userKey, int onlyShowMR, string orderBy,
-            int pageIndex, int pageSize,  ref int pageCount)
+        public DataTable GetBigDataPage(string userKey, int onlyShowMR, string filterClause, string orderBy,
+            int pageIndex, int pageSize, ref int pageCount)
         {
             DataAccessMgr daMgr = new DataAccessMgr();
 
@@ -73,7 +73,7 @@ namespace DataFactory
                 daMgr.BuildParam("@InLocation", SqlDbType.Bit, 0),
                 daMgr.BuildParam("@InGeneric", SqlDbType.Bit, 0),
                 daMgr.BuildParam("@InToDo", SqlDbType.Bit, 0),
-                daMgr.BuildParam("@FilterClause", SqlDbType.NVarChar, " 1=1 "),
+                daMgr.BuildParam("@FilterClause", SqlDbType.NVarChar, filterClause),
                 daMgr.BuildParam("@Unit", SqlDbType.NVarChar, null),
                 daMgr.BuildParam("@LinkField", SqlDbType.NVarChar, null),
                 daMgr.BuildParam("@tarFilter", SqlDbType.NVarChar, null),
