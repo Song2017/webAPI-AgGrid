@@ -75,7 +75,10 @@ Simply, aggrid send params to server, and transfer to procedure then get data fr
 
 ### DataFactory 数据库项目
 1. 使用ADO.Net调用存储过程, 获取数据. 
- 
+
+### Procedure 存储过程
+1. 示例文件: 参数及处理逻辑
+
 ## Note
 1. Not use Entity Framework, based on ADO.Net + procedure
 2. [ag-grid started](https://www.ag-grid.com/javascript-grid-getting-started/)
