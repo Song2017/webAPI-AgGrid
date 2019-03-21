@@ -1,4 +1,5 @@
 ﻿
+using AgGridApi.Models.Filter;
 using Newtonsoft.Json;
 using System;
 using System.Data;
@@ -45,6 +46,117 @@ namespace AgGridApi.Common
             stringBuilder.Remove(stringBuilder.Length - 1, 1).Append("]");
 
             return stringBuilder.ToStringEx();
+        }
+        // transfer ag-grid filter condition to sql
+        public static string GetFilterCondition(this ConditionFilterModel conditionFilterModel, string field)
+        {
+            StringBuilder condition = new StringBuilder();
+            switch (conditionFilterModel.FilterType)
+            {
+
+                case FilterConditionType.TEXT:
+                    switch (conditionFilterModel.Type)
+                    {
+                        case FilterType.EQUALS:
+                            condition.Append($" UPPER({field}) = UPPER('{conditionFilterModel.Filter}') ");
+                            break;
+                        case FilterType.NOT_EQUAL:
+                            condition.Append($" UPPER({field}) != UPPER('{conditionFilterModel.Filter}') ");
+                            break;
+                        case FilterType.STARTS_WITH:
+                            condition.Append($" UPPER({field}) LIKE UPPER('{conditionFilterModel.Filter}%') ");
+                            break;
+                        case FilterType.ENDS_WITH:
+                            condition.Append($" UPPER({field}) LIKE UPPER('%{conditionFilterModel.Filter}') ");
+                            break;
+                        case FilterType.CONTAINS:
+                            condition.Append($" INSTR(UPPER({field}), UPPER('{conditionFilterModel.Filter}')) > 0 ");
+                            break;
+                        case FilterType.NOT_CONTAINS:
+                            condition.Append($" INSTR(UPPER({field}), UPPER('{conditionFilterModel.Filter}')) = 0 ");
+                            break;
+                        default:
+                            condition.Append($" INSTR(UPPER({field}), UPPER('{conditionFilterModel.Filter}')) > 0 ");
+                            break;
+                    }
+                    break;
+                case FilterConditionType.NUMBER:
+                    switch (conditionFilterModel.Type)
+                    {
+                        case FilterType.EQUALS:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) = {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.NOT_EQUAL:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) != {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.LESS_THAN:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) < {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.LESS_THAN_OR_EQUAL:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) <= {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.GREATER_THAN:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) > {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.GREATER_THAN_OR_EQUAL:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) >= {conditionFilterModel.Filter} ");
+                            break;
+                        case FilterType.IN_RANGE:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) BETWEEN {conditionFilterModel.Filter} " +
+                                $"and {conditionFilterModel.FilterTo}");
+                            break;
+                        default:
+                            condition.Append($" TO_NUMBER(NVL({field},0)) = {conditionFilterModel.Filter} ");
+                            break;
+                    }
+                    break;
+                case FilterConditionType.DATE:
+                    switch (conditionFilterModel.Type)
+                    {
+                        case FilterType.EQUALS:
+                            condition.Append($" {field} = '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.NOT_EQUAL:
+                            condition.Append($" {field} != '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.LESS_THAN:
+                            condition.Append($" {field} < '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.GREATER_THAN:
+                            condition.Append($" {field} > '{conditionFilterModel.DateFrom}' ");
+                            break;
+                        case FilterType.IN_RANGE:
+                            condition.Append($" {field} BETWEEN '{conditionFilterModel.DateFrom}' " +
+                                $"and '{conditionFilterModel.DateTo}' ");
+                            break;
+                        //case FilterType.EQUALS:
+                        //    condition.Append($" {field} = TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.NOT_EQUAL:
+                        //    condition.Append($" {field} != TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.LESS_THAN:
+                        //    condition.Append($" {field} < TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.GREATER_THAN:
+                        //    condition.Append($" {field} > TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        //case FilterType.IN_RANGE:
+                        //    condition.Append($" {field} BETWEEN TO_DATE('{conditionFilterModel.DateFrom}','{Constants.DATEFORMAT}') " +
+                        //        $"and TO_DATE('{conditionFilterModel.DateTo}','{Constants.DATEFORMAT}') ");
+                        //    break;
+                        default:
+                            condition.Append($" {field} = TO_DATE('{conditionFilterModel.Filter}','{Constants.DATEFORMAT}') ");
+                            break;
+                    }
+                    break;
+                case FilterConditionType.SET:
+                    break;
+                default: break;
+            }
+
+
+            return condition.ToStringEx();
         }
 
 

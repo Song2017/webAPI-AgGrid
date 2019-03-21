@@ -34,10 +34,10 @@ namespace AgGridApi.Controllers
 
         [HttpPost]
         [Route("GetAllData")]
-        public ServerRowsResponse GetAllData([FromBody] ServerRowsRequest request)
+        public Task<ServerRowsResponse> GetAllData([FromBody] ServerRowsRequest request)
         {
-            _requestBuilder.AssignRequest(request);
-            return _aGServer.GetData(_requestBuilder);
+            return Task.Run(() =>
+            _aGServer.GetData(_requestBuilder.GetRequestBuilder(request)));
         }
 
         #region operate

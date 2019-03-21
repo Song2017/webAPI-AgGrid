@@ -17,17 +17,19 @@ var columnDefs = [
     }, 
     {
         headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
-        filterParams: {defaultOption: 'startsWith'}
+        filterParams: { newRowsAction: 'keep', defaultOption: 'startsWith', applyButton: true, clearButton: true }
     },
     {
         headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,  filter: 'agTextColumnFilter',
-        enableRowGroup: true, floatingFilterComponentParams: {debounceMs: 2000}
+        enableRowGroup: true, floatingFilterComponentParams: { debounceMs: 2000 } 
+
     },
     { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' },
     { headerName: "OWNERKEY", field: "ownerkey", enableRowGroup: true },
     { headerName: "PLANTKEY", field: "plantkey", enableRowGroup: true },
     {
-        headerName: "Valve Size", field: "valvesize", filter: 'agNumberColumnFilter', enableRowGroup: true,
+        headerName: "NEXTINSPFREQ", field: "nextinspfreq", filter: 'agNumberColumnFilter',
+        enableRowGroup: true,
     },
     { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true }
 ];
@@ -51,11 +53,11 @@ var gridOptions = {
         sortable: true, //enable server sort
         resizable: true,
         suppressNavigable: true,
-        menuTabs: ['filterMenuTab', 'generalMenuTab'], 
-        allowedAggFuncs: ['count']
+        menuTabs: ['filterMenuTab'],
+        filterParams: { newRowsAction: 'keep' }
     },
     floatingFilter: true,
-    autoGroupColumnDef: groupColumn,
+    //autoGroupColumnDef: groupColumn,
     columnDefs: columnDefs,
     multiSortKey: 'ctrl',
     debug: false,
@@ -70,7 +72,7 @@ var gridOptions = {
     cacheBlockSize: 10,//Lazy-loading: with the grid options property: cacheBlockSize = 100 data will be fetched in blocks of 100 rows at a time.
     maxBlocksInCache: 1000,//to limit the amount of data cached in the grid you can set maxBlocksInCache via the gridOptions.
     infiniteInitialRowCount: 5,//How many rows to initially allow the user to scroll to. 
-    animateRows: true,
+    //animateRows: true,
     pagination: true,
     paginationPageSize: 10,
     onPaginationChanged: onPaginationChanged,

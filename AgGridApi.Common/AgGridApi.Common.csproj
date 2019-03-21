@@ -11,4 +11,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AgGridApi.Models\AgGridApi.Models.csproj" />
+  </ItemGroup>
+
 </Project>
