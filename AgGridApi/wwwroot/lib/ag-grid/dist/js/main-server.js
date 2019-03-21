@@ -21,10 +21,11 @@ var columnDefs = [
     },
     {
         headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,  filter: 'agTextColumnFilter',
-        floatingFilterComponentParams: {debounceMs: 2000}
+        enableRowGroup: true, floatingFilterComponentParams: {debounceMs: 2000}
     },
     { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true },
     { headerName: "OWNERKEY", field: "ownerkey", enableRowGroup: true },
+    { headerName: "PLANTKEY", field: "plantkey", enableRowGroup: true },
     {
         headerName: "Valve Size", field: "valvesize", filter: 'agNumberColumnFilter', enableRowGroup: true,
     },
@@ -142,7 +143,7 @@ function getSelectedRows() {
     var selecteddata = selectedNodes.map(function (node) {
         return node.data
     }).map(function (node) {
-        return node.UNIQUEKEY + '_' + node.model + '_' + node.A_ACTION
+        return node.uniquekey + '_' + node.tagnumber 
     }).join(', ');
     alert('selectNodes: ' + selecteddata);
 }
