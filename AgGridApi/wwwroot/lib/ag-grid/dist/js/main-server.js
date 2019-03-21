@@ -23,13 +23,13 @@ var columnDefs = [
         headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,  filter: 'agTextColumnFilter',
         enableRowGroup: true, floatingFilterComponentParams: {debounceMs: 2000}
     },
-    { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true },
+    { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' },
     { headerName: "OWNERKEY", field: "ownerkey", enableRowGroup: true },
     { headerName: "PLANTKEY", field: "plantkey", enableRowGroup: true },
     {
         headerName: "Valve Size", field: "valvesize", filter: 'agNumberColumnFilter', enableRowGroup: true,
     },
-    { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' }
+    { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true }
 ];
 
 // groupColumn
@@ -51,10 +51,7 @@ var gridOptions = {
         sortable: true, //enable server sort
         resizable: true,
         suppressNavigable: true,
-        menuTabs: ['filterMenuTab', 'generalMenuTab'],
-        filterParams: {
-            newRowsAction: 'keep'
-        },
+        menuTabs: ['filterMenuTab', 'generalMenuTab'], 
         allowedAggFuncs: ['count']
     },
     floatingFilter: true,
@@ -69,7 +66,7 @@ var gridOptions = {
     rowDeselection: true,
     rowGroupPanelShow: 'always',
 
-    //cacheBlockSize: min(pagesize), in case no data to show
+    //cacheBlockSize:pagesize, in case no/duplicate data to show
     cacheBlockSize: 10,//Lazy-loading: with the grid options property: cacheBlockSize = 100 data will be fetched in blocks of 100 rows at a time.
     maxBlocksInCache: 1000,//to limit the amount of data cached in the grid you can set maxBlocksInCache via the gridOptions.
     infiniteInitialRowCount: 5,//How many rows to initially allow the user to scroll to. 
@@ -102,6 +99,13 @@ var gridOptions = {
 // setup the grid after the page has finished loading
 document.addEventListener('DOMContentLoaded', function () {
     var gridDiv = document.querySelector('#myGrid');
+    if (sessionStorage.getItem("PageSize")) {
+        var sessionPageSize = Number(sessionStorage.getItem("PageSize"));
+        gridOptions.cacheBlockSize = sessionPageSize;
+        document.getElementById('page-size').value = sessionPageSize;
+        gridOptions.paginationPageSize = sessionPageSize;
+        agPagination.PageSize = sessionPageSize;
+    }
     new agGrid.Grid(gridDiv, gridOptions);
 
     fetch('https://localhost:44364/api/aggrid/GetDataColumns/uspGetCVList').then(function (response) {
@@ -117,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // Datasource
 function EnterpriseDatasource() { }
 EnterpriseDatasource.prototype.getRows = function (params) {
-    var request = params.request;
+    var request = params.request; 
     request['pageIndex'] = agPagination.PageIndex;
     request['pageSize'] = agPagination.PageSize;
     request['filterModel'] = formatFilterModel(request.filterModel);
@@ -223,10 +227,9 @@ function setNormal(api) {
 }
 // Pagination
 function onPageSizeChanged() {
-    let value = Number(document.getElementById('page-size').value);
-    gridOptions.api.paginationSetPageSize(value);
-    agPagination.PageSize = value;
-    gridOptions.cacheBlockSize = value;
+    var value = Number(document.getElementById('page-size').value); 
+    sessionStorage.setItem("PageSize", value);
+    location.reload();
 }
 function onPaginationNext() {
     gridOptions.api.paginationGoToNextPage();
@@ -239,10 +242,10 @@ function onPaginationChanged() {
 }
 // Filter
 function formatFilterModel(filterModels) {
-    let aryFilter = []
-    let objChild = {}
-    let aryCondition = []
-    for (let filter in filterModels) {
+    var aryFilter = [];
+    var objChild = {};
+    var aryCondition = [];
+    for (var filter in filterModels) {
         if (filterModels[filter].operator) {
             objChild["head"] = { "field": filter, "operate": filterModels[filter].operator };
 

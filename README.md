@@ -1,4 +1,4 @@
-# AgGridAPI
+# AgGrid-WebAPI
 This is a simple aggrid with  web api framework, aim to use aggrid with web api on .net core.     
 Simply, aggrid send params to server, and transfer to procedure then get data from Database.     
 - parameter(filterModels, sortModels..): Client(browser) => Server(.net core 2.2) => Oracle DB(procedure)    
@@ -13,14 +13,14 @@ Simply, aggrid send params to server, and transfer to procedure then get data fr
 3. DataBase: Oracle: procedure
 
 ## App Context
-1. 为了显示大数据量, 以及考虑到控件自身的功能丰富度和support, 前端使用[ag-grid](https://www.ag-grid.com/)控件
-2. 为了容器化, 采用 [.net core 2.2](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2)框架
+1. 显示大数据量,考虑到控件自身的功能丰富度和support, 前端使用[ag-grid](https://www.ag-grid.com/)控件
+2. 容器化, 使用[.net core 2.2](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2)框架
 3. 兼容移动端, 使用web api
 4. 为了更好的利用已有的存储过程, 未使用EF, 通过 ADO.Net获取数据库数据.
 
 ## Project Intro
 ### AgGridApi 网站程序项目
-1. 配置文件
+1. Config files
 	- launchSettings.json: 默认的程序启动配置文件
 	- dbsettings.json: 配置数据库连接字符串
 	- Startup.cs: 配置和注入服务
@@ -31,7 +31,7 @@ Simply, aggrid send params to server, and transfer to procedure then get data fr
 	//  Scoped objects are the same within a request but different across requests. 
 	services.AddScoped<IDemo, Demo>();
 ```	
-2. Controller: DI+RESTful风格使用
+2. Controller: DI+RESTful
 ```
     [Route("api/aggrid")]
     [ApiController]
@@ -71,11 +71,13 @@ Simply, aggrid send params to server, and transfer to procedure then get data fr
 ### AgGridApi.Common 辅助方法项目
 1. 生成表格列名
 2. 辅助函数
-3. 静态参数
+3. 静态常量
 
 ### DataFactory 数据库项目
 1. 使用ADO.Net调用存储过程, 获取数据. 
  
 ## Note
-1. Not use Entity Framework, base on ADO.Net
-因为工作中更多使用存储过程+Oracle, 不太适合使用Entity Framework, 作为试验写了一下.
+1. Not use Entity Framework, based on ADO.Net + procedure
+2. [ag-grid started](https://www.ag-grid.com/javascript-grid-getting-started/)
+3. [ag-grid row model support function comparisons](https://www.ag-grid.com/javascript-grid-row-models/#row-model-comparisons)
+4. [ag-grid grid features](https://www.ag-grid.com/javascript-grid-features/)
