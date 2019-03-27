@@ -1,28 +1,37 @@
-﻿var vkresult;
-var varrequest;
-var dataSource;
-var agPagination = {
+﻿var agPagination = {
     PageIndex: 0,
-    lastRow: null,
     PageSize: 10
 };
 // Columns
 var columnDefs = [
     {
-        headerName: "", width: 40, field: "selectcol", hide: false,
-        lockPosition: true, lockPinned: true,
+        headerName: "", width: 20, field: "selectcol", hide: false,
+        lockPosition: true, lockPinned: true, cellStyle: { padding: '0 2px' },
         lockVisible: true, pinned: "left", resizable: false, sortable: false, filter: false,
         suppressMenu: true, suppressMovable: true, suppressNavigable: true,
-        checkboxSelection: function (params) { return true; }
-    }, 
-    {
-        headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
-        filterParams: { newRowsAction: 'keep', defaultOption: 'startsWith', applyButton: true, clearButton: true }
+        checkboxSelection: function (params) {
+            return params.columnApi.getRowGroupColumns().length === 0;
+        }
     },
     {
-        headerName: "TAGNUMBER11", field: "tagnumber", sortable: true,  filter: 'agTextColumnFilter',
-        enableRowGroup: true, floatingFilterComponentParams: { debounceMs: 2000 } 
-
+        headerName: "", width: 54, field: "operatecol", hide: false,
+        lockPosition: true, lockPinned: true, cellStyle: { padding: '0 2px' },
+        lockVisible: true, pinned: "left", resizable: true, sortable: false, filter: false,
+        suppressMenu: true, suppressMovable: true, suppressNavigable: true,
+        pinnedRowCellRenderer: true, 
+        cellRenderer: 'dataItemTemplateRender',
+        headerComponent: HeaderCheckbox 
+    },
+    {
+        headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
+        filterParams: {
+            newRowsAction: 'keep', defaultOption: 'startsWith',
+            applyButton: true, clearButton: true
+        }
+    },
+    {
+        headerName: "TAGNUMBER11", field: "tagnumber", sortable: true, filter: 'agTextColumnFilter',
+        enableRowGroup: true, floatingFilterComponentParams: { debounceMs: 2000 }
     },
     { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' },
     { headerName: "OWNERKEY", field: "ownerkey", enableRowGroup: true },
@@ -33,14 +42,6 @@ var columnDefs = [
     },
     { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true }
 ];
-
-// groupColumn
-var groupColumn = {
-    headerName: "Group Column",
-    width: 200, 
-    headerCheckboxSelectionFilteredOnly: true,
-    cellRenderer: 'agGroupCellRenderer'
-};
 
 var gridOptions = {
     defaultColDef: {
@@ -75,9 +76,11 @@ var gridOptions = {
     //animateRows: true,
     pagination: true,
     paginationPageSize: 10,
-    onPaginationChanged: onPaginationChanged,
     //quickFilterText: null,
 
+    onPaginationChanged: onPaginationChanged,
+    onRowSelected: rowSelected, //callback when row selected
+    onSelectionChanged: selectionChanged, //callback when selection changed,
     sideBar: {
         toolPanels: [{
             id: 'columns',
@@ -87,14 +90,15 @@ var gridOptions = {
             toolPanel: 'agColumnsToolPanel',
             toolPanelParams: {
                 suppressPivots: true,
-                suppressPivotMode: true,
-                suppressValues: true
+                suppressPivotMode: true
             }
         }]
     },
 
     components: {
-        booleanCellRenderer: booleanCellRenderer
+        booleanCellRenderer: booleanCellRenderer,
+        dataItemTemplateRender: DataItemTemplateRender,
+        //CustomHeader: CustomHeader
     },
 };
 
@@ -104,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (sessionStorage.getItem("PageSize")) {
         var sessionPageSize = Number(sessionStorage.getItem("PageSize"));
         gridOptions.cacheBlockSize = sessionPageSize;
-        document.getElementById('page-size').value = sessionPageSize;
+        document.getElementById('selPageSize').value = sessionPageSize;
         gridOptions.paginationPageSize = sessionPageSize;
         agPagination.PageSize = sessionPageSize;
     }
@@ -115,31 +119,31 @@ document.addEventListener('DOMContentLoaded', function () {
     }).then(function (data) {
         gridOptions.api.setColumnDefs(columnDefs.concat(JSON.parse(data)));
     })
-    var datasource = new EnterpriseDatasource();
-    gridOptions.api.setServerSideDatasource(datasource);
+    gridOptions.api.setServerSideDatasource(new EnterpriseDatasource());
 });
 
 
 // Datasource
-function EnterpriseDatasource() { }
-EnterpriseDatasource.prototype.getRows = function (params) {
-    var request = params.request; 
-    request['pageIndex'] = agPagination.PageIndex;
-    request['pageSize'] = agPagination.PageSize;
-    request['filterModel'] = formatFilterModel(request.filterModel);
-    requestForServer = JSON.stringify(request, null, 2);
+function EnterpriseDatasource() {
+    EnterpriseDatasource.prototype.getRows = function (params) {
+        var request = params.request;
+        request['pageIndex'] = agPagination.PageIndex;
+        request['pageSize'] = agPagination.PageSize;
+        request['filterModel'] = formatFilterModel(request.filterModel);
+        requestForServer = JSON.stringify(request, null, 2);
 
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.open('POST', 'https://localhost:44364/api/aggrid/GetAllData');
-    httpRequest.setRequestHeader("Content-type", "application/json");
-    httpRequest.send(requestForServer);
-    httpRequest.onreadystatechange = function () {
-        if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-            httpResponseForServer = JSON.parse(httpRequest.responseText);
-            params.successCallback(httpResponseForServer.data, httpResponseForServer.lastRow);
-        }
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.open('POST', 'https://localhost:44364/api/aggrid/GetAllData');
+        httpRequest.setRequestHeader("Content-type", "application/json");
+        httpRequest.send(requestForServer);
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+                httpResponseForServer = JSON.parse(httpRequest.responseText);
+                params.successCallback(httpResponseForServer.data, httpResponseForServer.lastRow);
+            }
+        };
     };
-};
+}
 
 
 // Functions
@@ -149,7 +153,7 @@ function getSelectedRows() {
     var selecteddata = selectedNodes.map(function (node) {
         return node.data
     }).map(function (node) {
-        return node.uniquekey + '_' + node.tagnumber 
+        return node.uniquekey + '_' + node.tagnumber
     }).join(', ');
     alert('selectNodes: ' + selecteddata);
 }
@@ -161,22 +165,10 @@ function sizeToFit() {
 function autoSizeAll() {
     var allColumnIds = [];
     gridOptions.columnApi.getAllColumns().forEach(function (column) {
-        allColumnIds.push(column.colId);
+        if (column.colId != 'selectcol' && column.colId != 'operatecol')
+            allColumnIds.push(column.colId);
     });
     gridOptions.columnApi.autoSizeColumns(allColumnIds.slice(1));
-}
-// Check box render
-function booleanCellRenderer(params) {
-    var valueCleaned = params.value;
-    if (valueCleaned === 'T') {
-        return '<input type="checkbox" checked/>';
-    } else if (valueCleaned === 'F') {
-        return '<input type="checkbox" unchecked/>';
-    } else if (params.value !== null && params.value !== undefined) {
-        return params.value.toString();
-    } else {
-        return null;
-    }
 }
 // Export
 function onBtExport() {
@@ -229,7 +221,7 @@ function setNormal(api) {
 }
 // Pagination
 function onPageSizeChanged() {
-    var value = Number(document.getElementById('page-size').value); 
+    var value = Number(document.getElementById('selPageSize').value);
     sessionStorage.setItem("PageSize", value);
     location.reload();
 }
@@ -257,7 +249,7 @@ function formatFilterModel(filterModels) {
                 aryCondition.push(filterModels[filter].condition2);
         }
         else {
-            objChild["head"] ={ "field": filter, "operate": "" };
+            objChild["head"] = { "field": filter, "operate": "" };
             aryCondition.push(filterModels[filter]);
         }
         objChild["condition"] = aryCondition;
@@ -268,3 +260,169 @@ function formatFilterModel(filterModels) {
 
     return aryFilter;
 }
+// Row 
+function rowSelected(event) {
+    rowSelectedevent = event;
+    console.log('rowSelected:' + event.data.tagnumber);
+}
+function selectionChanged(event) {
+    console.log('selectionChanged:');
+    selectionChangedevent = event;
+}
+// Render
+function booleanCellRenderer(params) {
+    var valueCleaned = params.value;
+    if (valueCleaned === 'T') {
+        return '<input type="checkbox" checked/>';
+    } else if (valueCleaned === 'F') {
+        return '<input type="checkbox" unchecked/>';
+    } else if (params.value !== null && params.value !== undefined) {
+        return params.value.toString();
+    } else {
+        return null;
+    }
+}
+
+function DataItemTemplateRender() { }
+DataItemTemplateRender.prototype.init = function (params) {
+    this.eGui = document.createElement("div"); 
+    this.eGui.className = "clsDataItemTemplate";
+    let aElement = document.createElement("a");
+    aElement.setAttribute('rel', "noopener noreferrer");
+    aElement.setAttribute('target', "_blank");
+    aElement.className = "clsCommon clsview";
+    aElement.href = 'newtab?' + params.data.uniquekey;
+    this.eGui.appendChild(aElement);
+
+    aElement = document.createElement("a");
+    aElement.setAttribute('target', "_blank");
+    aElement.className = "clsCommon clsedit";
+    aElement.onclick = function () {
+        window.open('newtabedit?' + params.data.uniquekey, params.data.uniquekey + 'Edit')
+    };
+    this.eGui.appendChild(aElement);
+
+    aElement = document.createElement("a");
+    aElement.className = "clsCommon clsdelete";
+    aElement.onclick = function () { alert('delete'); };
+    this.eGui.appendChild(aElement); 
+}
+DataItemTemplateRender.prototype.getGui = function () {
+    return this.eGui;
+};
+// Header Components
+function HeaderCheckbox() { }
+HeaderCheckbox.prototype.init = function (agParams) {
+    this.agParams = agParams;
+    this.eGui = document.createElement('input');
+    this.eGui.setAttribute('type', 'checkbox');
+    this.onHeaderCheckBoxChangedListener = this.onHeaderCheckBoxChanged.bind(this);
+    this.eGui.addEventListener('change', this.onHeaderCheckBoxChangedListener)
+}
+HeaderCheckbox.prototype.getGui = function () {
+    return this.eGui;
+};
+HeaderCheckbox.prototype.onHeaderCheckBoxChanged = function () {
+    if (this.eGui.checked == true) {
+        gridOptions.api.forEachNode(node => node.setSelected(true));
+    } else {
+        gridOptions.api.deselectAll();
+    }
+};
+HeaderCheckbox.prototype.destroy = function () { 
+    this.agParams.column.removeEventListener('change', this.onHeaderCheckBoxChangedListener);
+};
+
+function CustomHeader() {}
+CustomHeader.prototype.init = function (agParams) {
+    this.agParams = agParams;
+    this.eGui = document.createElement('div');
+    this.eGui.innerHTML = '' +
+        '<div class="customHeaderMenuButton"><i class="fa ' + this.agParams.menuIcon + '"></i></div>' +
+        '<div class="customHeaderLabel">' + this.agParams.displayName + '</div>' +
+        '<div class="customSortDownLabel inactive"><i class="fa fa-long-arrow-alt-down"></i></div>' +
+        '<div class="customSortUpLabel inactive"><i class="fa fa-long-arrow-alt-up"></i></div>' +
+        '<div class="customSortRemoveLabel inactive"><i class="fa fa-times"></i></div>' +
+        '<input class="customHeaderCheckBox" type="checkbox">';
+
+    this.eMenuButton = this.eGui.querySelector(".customHeaderMenuButton");
+    this.eSortDownButton = this.eGui.querySelector(".customSortDownLabel");
+    this.eSortUpButton = this.eGui.querySelector(".customSortUpLabel");
+    this.eSortRemoveButton = this.eGui.querySelector(".customSortRemoveLabel");
+    this.eHeaderCheckBox = this.eGui.querySelector(".customHeaderCheckBox");
+
+    this.onHeaderCheckBoxChangedListener = this.onHeaderCheckBoxChanged.bind(this);
+    this.eHeaderCheckBox.addEventListener('change', this.onHeaderCheckBoxChangedListener)
+
+    if (this.agParams.enableMenu) {
+        this.onMenuClickListener = this.onMenuClick.bind(this);
+        this.eMenuButton.addEventListener('click', this.onMenuClickListener);
+    } else {
+        this.eGui.removeChild(this.eMenuButton);
+    }
+
+    if (this.agParams.enableSorting) {
+        this.onSortAscRequestedListener = this.onSortRequested.bind(this, 'asc');
+        this.eSortDownButton.addEventListener('click', this.onSortAscRequestedListener);
+        this.onSortDescRequestedListener = this.onSortRequested.bind(this, 'desc');
+        this.eSortUpButton.addEventListener('click', this.onSortDescRequestedListener);
+        this.onRemoveSortListener = this.onSortRequested.bind(this, '');
+        this.eSortRemoveButton.addEventListener('click', this.onRemoveSortListener);
+
+        this.onSortChangedListener = this.onSortChanged.bind(this);
+        this.agParams.column.addEventListener('sortChanged', this.onSortChangedListener);
+        this.onSortChanged();
+    } else {
+        this.eGui.removeChild(this.eSortDownButton);
+        this.eGui.removeChild(this.eSortUpButton);
+        this.eGui.removeChild(this.eSortRemoveButton);
+    }
+};
+CustomHeader.prototype.onHeaderCheckBoxChanged = function () {
+    if (this.eHeaderCheckBox.checked == true) {
+        gridOptions.api.selectAll();
+    } else {
+        gridOptions.api.deselectAll();
+    }
+};
+CustomHeader.prototype.onSortChanged = function () {
+    function deactivate(toDeactivateItems) {
+        toDeactivateItems.forEach(function (toDeactivate) {
+            toDeactivate.className = toDeactivate.className.split(' ')[0]
+        });
+    }
+
+    function activate(toActivate) {
+        toActivate.className = toActivate.className + " active";
+    }
+
+    if (this.agParams.column.isSortAscending()) {
+        deactivate([this.eSortUpButton, this.eSortRemoveButton]);
+        activate(this.eSortDownButton)
+    } else if (this.agParams.column.isSortDescending()) {
+        deactivate([this.eSortDownButton, this.eSortRemoveButton]);
+        activate(this.eSortUpButton)
+    } else {
+        deactivate([this.eSortUpButton, this.eSortDownButton]);
+        activate(this.eSortRemoveButton)
+    }
+};
+CustomHeader.prototype.getGui = function () {
+    return this.eGui;
+};
+CustomHeader.prototype.onMenuClick = function () {
+    this.agParams.showColumnMenu(this.eMenuButton);
+};
+CustomHeader.prototype.onSortRequested = function (order, event) {
+    this.agParams.setSort(order, event.shiftKey);
+};
+CustomHeader.prototype.destroy = function () {
+    if (this.onMenuClickListener) {
+        this.eMenuButton.removeEventListener('click', this.onMenuClickListener)
+    }
+    this.eSortDownButton.removeEventListener('click', this.onSortRequestedListener);
+    this.eSortUpButton.removeEventListener('click', this.onSortRequestedListener);
+    this.eSortRemoveButton.removeEventListener('click', this.onSortRequestedListener);
+    this.agParams.column.removeEventListener('sortChanged', this.onSortChangedListener);
+    this.agParams.column.removeEventListener('change', this.onHeaderCheckBoxChangedListener);
+};

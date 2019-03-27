@@ -46987,12 +46987,7 @@
                         return this.displayWatermark;
                     };
                     LicenseManager.outputMessage = function (header, message) {
-                        console.error('****************************************************************************************************************');
-                        console.error('*************************************** ag-Grid Enterprise License *********************************************');
-                        console.error(header);
-                        console.error(message);
-                        console.error('****************************************************************************************************************');
-                        console.error('****************************************************************************************************************');
+                        console.log('*************************************** ag-Grid Enterprise License *********************************************');
                     };
                     LicenseManager.formatDate = function (date) {
                         var monthNames = [

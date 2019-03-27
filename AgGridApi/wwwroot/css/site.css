@@ -2,11 +2,13 @@
 for details on configuring this project to bundle and minify static web assets. */
 body {
     padding-bottom: 20px;
-    height:750px;
+    height: 750px;
 }
+
 section {
-height:90%;
+    height: 90%;
 }
+
 ul {
     list-style-type: none;
     margin: 0;
@@ -52,6 +54,43 @@ li {
 #qrCode {
     margin: 15px;
 }
+
+/* data item template*/
+.clsDataItemTemplate {
+    display: flex;
+    margin: 5px 0 0 0;
+}
+
+/* image */
+.clsCommon {
+    background: url('../images/common.png') no-repeat top left;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.clsview {
+    width: 16px;
+    height: 16px;
+    background-position: 0 -1360px;
+}
+
+.clsedit {
+    width: 16px;
+    height: 16px;
+    background-position: 0 -320px;
+}
+
+.clsdelete {
+    width: 16px;
+    height: 16px;
+    background-position: 0 -272px;
+}
+
+    .clsview:hover, .clsedit:hover, .clsdelete:hover {
+        cursor: pointer;
+        background-color: #FFFFFF;
+    }
+
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
