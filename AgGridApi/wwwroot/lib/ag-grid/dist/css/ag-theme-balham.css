@@ -502,8 +502,8 @@
     .ag-theme-balham .ag-header-cell,
     .ag-theme-balham .ag-header-group-cell {
       line-height: 32px;
-      padding-left: 12px;
-      padding-right: 12px; }
+      padding-left: 6px;
+      padding-right: 6px; }
     .ag-theme-balham .ag-cell {
       line-height: 26px;
       padding-left: 12px;
@@ -1436,7 +1436,7 @@
     .ag-theme-balham .ag-selection-checkbox span,
     .ag-theme-balham .ag-group-expanded span,
     .ag-theme-balham .ag-group-contracted span {
-      margin-right: 12px; }
+      margin-right: 2px; }
     .ag-theme-balham .ag-selection-checkbox span {
       position: relative;
       top: 2px; }

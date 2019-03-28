@@ -2,25 +2,20 @@
     PageIndex: 0,
     PageSize: 10
 };
+
 // Columns
 var columnDefs = [
     {
-        headerName: "", width: 20, field: "selectcol", hide: false,
+        headerName: "", width: 84, field: "operatecol", hide: false,
         lockPosition: true, lockPinned: true, cellStyle: { padding: '0 2px' },
-        lockVisible: true, pinned: "left", resizable: false, sortable: false, filter: false,
-        suppressMenu: true, suppressMovable: true, suppressNavigable: true,
+        lockVisible: true, pinned: "left", resizable: false, sortable: false,
+        filter: false, suppressMenu: true, suppressMovable: true,
+        suppressNavigable: true, pinnedRowCellRenderer: true,
+        cellRenderer: 'dataItemTemplateRender',
+        headerComponent: HeaderCheckbox,
         checkboxSelection: function (params) {
             return params.columnApi.getRowGroupColumns().length === 0;
         }
-    },
-    {
-        headerName: "", width: 54, field: "operatecol", hide: false,
-        lockPosition: true, lockPinned: true, cellStyle: { padding: '0 2px' },
-        lockVisible: true, pinned: "left", resizable: true, sortable: false, filter: false,
-        suppressMenu: true, suppressMovable: true, suppressNavigable: true,
-        pinnedRowCellRenderer: true, 
-        cellRenderer: 'dataItemTemplateRender',
-        headerComponent: HeaderCheckbox 
     },
     {
         headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
@@ -34,11 +29,10 @@ var columnDefs = [
         enableRowGroup: true, floatingFilterComponentParams: { debounceMs: 2000 }
     },
     { headerName: "Date Tested", field: "datetested", filter: 'agDateColumnFilter' },
-    { headerName: "OWNERKEY", field: "ownerkey", enableRowGroup: true },
     { headerName: "PLANTKEY", field: "plantkey", enableRowGroup: true },
     {
-        headerName: "NEXTINSPFREQ", field: "nextinspfreq", filter: 'agNumberColumnFilter',
-        enableRowGroup: true,
+        headerName: "LOOPNUMBER", field: "loopnumber", filter: 'agNumberColumnFilter',
+        enableRowGroup: true, enableValue: true
     },
     { headerName: "DATETESTEDSORT", field: "datetestedsort", enableRowGroup: true }
 ];
@@ -64,10 +58,8 @@ var gridOptions = {
     debug: false,
 
     rowModelType: 'serverSide',
-    rowDragManaged: true,
     rowSelection: 'multiple',
     rowDeselection: true,
-    rowGroupPanelShow: 'always',
 
     //cacheBlockSize:pagesize, in case no/duplicate data to show
     cacheBlockSize: 10,//Lazy-loading: with the grid options property: cacheBlockSize = 100 data will be fetched in blocks of 100 rows at a time.
@@ -98,7 +90,6 @@ var gridOptions = {
     components: {
         booleanCellRenderer: booleanCellRenderer,
         dataItemTemplateRender: DataItemTemplateRender,
-        //CustomHeader: CustomHeader
     },
 };
 
@@ -112,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
         gridOptions.paginationPageSize = sessionPageSize;
         agPagination.PageSize = sessionPageSize;
     }
+
     new agGrid.Grid(gridDiv, gridOptions);
 
     fetch('https://localhost:44364/api/aggrid/GetDataColumns/uspGetCVList').then(function (response) {
@@ -282,10 +274,9 @@ function booleanCellRenderer(params) {
         return null;
     }
 }
-
 function DataItemTemplateRender() { }
 DataItemTemplateRender.prototype.init = function (params) {
-    this.eGui = document.createElement("div"); 
+    this.eGui = document.createElement("div");
     this.eGui.className = "clsDataItemTemplate";
     let aElement = document.createElement("a");
     aElement.setAttribute('rel', "noopener noreferrer");
@@ -305,7 +296,7 @@ DataItemTemplateRender.prototype.init = function (params) {
     aElement = document.createElement("a");
     aElement.className = "clsCommon clsdelete";
     aElement.onclick = function () { alert('delete'); };
-    this.eGui.appendChild(aElement); 
+    this.eGui.appendChild(aElement);
 }
 DataItemTemplateRender.prototype.getGui = function () {
     return this.eGui;
@@ -313,27 +304,39 @@ DataItemTemplateRender.prototype.getGui = function () {
 // Header Components
 function HeaderCheckbox() { }
 HeaderCheckbox.prototype.init = function (agParams) {
+    agagParams = agParams;
     this.agParams = agParams;
-    this.eGui = document.createElement('input');
-    this.eGui.setAttribute('type', 'checkbox');
+    this.eGui = document.createElement('div');
+    this.eGui.className = "clsDataItemTemplate";
+    this.eHeaderCheckBox = document.createElement("input");
+    this.eHeaderCheckBox.setAttribute('type', 'checkbox');
     this.onHeaderCheckBoxChangedListener = this.onHeaderCheckBoxChanged.bind(this);
-    this.eGui.addEventListener('change', this.onHeaderCheckBoxChangedListener)
+    this.eHeaderCheckBox.addEventListener('change', this.onHeaderCheckBoxChangedListener);
+
+    this.eHeaderNewButton = document.createElement("a");
+    this.eHeaderNewButton.setAttribute('rel', "noopener noreferrer");
+    this.eHeaderNewButton.setAttribute('target', "_blank");
+    this.eHeaderNewButton.className = "clsCommon clsadd";
+    this.eHeaderNewButton.href = 'addnew';
+
+    this.eGui.appendChild(this.eHeaderCheckBox);
+    this.eGui.appendChild(this.eHeaderNewButton);
 }
 HeaderCheckbox.prototype.getGui = function () {
     return this.eGui;
 };
 HeaderCheckbox.prototype.onHeaderCheckBoxChanged = function () {
-    if (this.eGui.checked == true) {
+    if (this.eHeaderCheckBox.checked == true) {
         gridOptions.api.forEachNode(node => node.setSelected(true));
     } else {
         gridOptions.api.deselectAll();
     }
 };
-HeaderCheckbox.prototype.destroy = function () { 
+HeaderCheckbox.prototype.destroy = function () {
     this.agParams.column.removeEventListener('change', this.onHeaderCheckBoxChangedListener);
 };
 
-function CustomHeader() {}
+function CustomHeader() { }
 CustomHeader.prototype.init = function (agParams) {
     this.agParams = agParams;
     this.eGui = document.createElement('div');

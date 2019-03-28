@@ -57,7 +57,7 @@ li {
 
 /* data item template*/
 .clsDataItemTemplate {
-    display: flex;
+    display: inline-flex;
     margin: 5px 0 0 0;
 }
 
@@ -66,6 +66,12 @@ li {
     background: url('../images/common.png') no-repeat top left;
     background-repeat: no-repeat;
     display: block;
+}
+
+.clsadd {
+    width: 16px;
+    height: 16px;
+    background-position: 0 0;
 }
 
 .clsview {
@@ -86,10 +92,17 @@ li {
     background-position: 0 -272px;
 }
 
-    .clsview:hover, .clsedit:hover, .clsdelete:hover {
+.clsgroup {
+    width: 16px;
+    height: 16px;
+    background-position: 0 -528px;
+}
+
+    .clsgroup:hover, .clsadd:hover, .clsview:hover, .clsedit:hover, .clsdelete:hover {
         cursor: pointer;
         background-color: #FFFFFF;
     }
+
 
 
 /* Hide/rearrange for smaller screens */
