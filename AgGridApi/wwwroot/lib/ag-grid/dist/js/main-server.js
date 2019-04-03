@@ -1,6 +1,9 @@
-﻿var agPagination = {
-    PageIndex: 0,
-    PageSize: 10
+﻿var aggridContext = {
+    focusedRowIndex: 0,//gridOptions.api.getDisplayedRowAtIndex(0)
+    pagination: {
+        PageIndex: 0,
+        PageSize: 10
+    }
 };
 
 // Columns
@@ -17,6 +20,7 @@ var columnDefs = [
             return params.columnApi.getRowGroupColumns().length === 0;
         }
     },
+    { headerName: "operatecol2", field: "operatecol2", hide: true, lockVisible: true },
     {
         headerName: "UNIQUEKEY", field: "uniquekey", filter: 'agTextColumnFilter',
         filterParams: {
@@ -52,7 +56,6 @@ var gridOptions = {
         filterParams: { newRowsAction: 'keep' }
     },
     floatingFilter: true,
-    //autoGroupColumnDef: groupColumn,
     columnDefs: columnDefs,
     multiSortKey: 'ctrl',
     debug: false,
@@ -72,7 +75,6 @@ var gridOptions = {
 
     onPaginationChanged: onPaginationChanged,
     onRowSelected: rowSelected, //callback when row selected
-    onSelectionChanged: selectionChanged, //callback when selection changed,
     sideBar: {
         toolPanels: [{
             id: 'columns',
@@ -96,12 +98,12 @@ var gridOptions = {
 // setup the grid after the page has finished loading
 document.addEventListener('DOMContentLoaded', function () {
     var gridDiv = document.querySelector('#myGrid');
+    let sessionPageSize;
     if (sessionStorage.getItem("PageSize")) {
-        var sessionPageSize = Number(sessionStorage.getItem("PageSize"));
+        sessionPageSize = Number(sessionStorage.getItem("PageSize"));
         gridOptions.cacheBlockSize = sessionPageSize;
-        document.getElementById('selPageSize').value = sessionPageSize;
         gridOptions.paginationPageSize = sessionPageSize;
-        agPagination.PageSize = sessionPageSize;
+        aggridContext.pagination.PageSize = sessionPageSize;
     }
 
     new agGrid.Grid(gridDiv, gridOptions);
@@ -112,6 +114,14 @@ document.addEventListener('DOMContentLoaded', function () {
         gridOptions.api.setColumnDefs(columnDefs.concat(JSON.parse(data)));
     })
     gridOptions.api.setServerSideDatasource(new EnterpriseDatasource());
+
+    //add page in bottom panel
+    let agPage = document.querySelector(".ag-paging-panel");
+    let cuPage = document.createElement("div");
+    cuPage.innerHTML = "<span>Page Size：</span><select id=selPageSize style=width:55px;margin:10px onchange=onPageSizeChanged()>"
+        + "<option value=10>10</option><option value=50>50</option><option value=100>100</option></select>";
+    agPage.insertBefore(cuPage, agPage.firstChild);
+    document.getElementById('selPageSize').value = sessionPageSize;
 });
 
 
@@ -119,8 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function EnterpriseDatasource() {
     EnterpriseDatasource.prototype.getRows = function (params) {
         var request = params.request;
-        request['pageIndex'] = agPagination.PageIndex;
-        request['pageSize'] = agPagination.PageSize;
+        request['pageIndex'] = aggridContext.pagination.PageIndex;
+        request['pageSize'] = aggridContext.pagination.PageSize;
         request['filterModel'] = formatFilterModel(request.filterModel);
         requestForServer = JSON.stringify(request, null, 2);
 
@@ -215,15 +225,15 @@ function setNormal(api) {
 function onPageSizeChanged() {
     var value = Number(document.getElementById('selPageSize').value);
     sessionStorage.setItem("PageSize", value);
-    location.reload();
+    gridOptions.api.paginationSetPageSize(value);
 }
 function onPaginationNext() {
     gridOptions.api.paginationGoToNextPage();
-    agPagination.PageIndex = gridOptions.api.paginationGetCurrentPage();
+    aggridContext.pagination.PageIndex = gridOptions.api.paginationGetCurrentPage();
 }
 function onPaginationChanged() {
     if (gridOptions.api) {
-        agPagination.PageIndex = gridOptions.api.paginationGetCurrentPage();
+        aggridContext.pagination.PageIndex = gridOptions.api.paginationGetCurrentPage();
     }
 }
 // Filter
@@ -254,20 +264,16 @@ function formatFilterModel(filterModels) {
 }
 // Row 
 function rowSelected(event) {
-    rowSelectedevent = event;
-    console.log('rowSelected:' + event.data.tagnumber);
-}
-function selectionChanged(event) {
-    console.log('selectionChanged:');
-    selectionChangedevent = event;
+    if (event.node.selected)
+        aggridContext.focusedRowIndex = event.rowIndex;
 }
 // Render
 function booleanCellRenderer(params) {
     var valueCleaned = params.value;
     if (valueCleaned === 'T') {
-        return '<input type="checkbox" checked/>';
+        return '<input type="checkbox" checked disabled/>';
     } else if (valueCleaned === 'F') {
-        return '<input type="checkbox" unchecked/>';
+        return '<input type="checkbox" unchecked disabled/>';
     } else if (params.value !== null && params.value !== undefined) {
         return params.value.toString();
     } else {
@@ -326,6 +332,7 @@ HeaderCheckbox.prototype.getGui = function () {
     return this.eGui;
 };
 HeaderCheckbox.prototype.onHeaderCheckBoxChanged = function () {
+
     if (this.eHeaderCheckBox.checked == true) {
         gridOptions.api.forEachNode(node => node.setSelected(true));
     } else {
